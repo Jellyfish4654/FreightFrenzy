@@ -89,9 +89,9 @@ public class JelleTele extends LinearOpMode {
             }
             }
 
-            if (gamepad1.y) {
+            if (gamepad2.y) {
                 spinner.on(DcMotorSimple.Direction.FORWARD);
-            } else if (gamepad1.x){
+            } else if (gamepad2.x){
                 spinner.on(DcMotorSimple.Direction.REVERSE);
             } else {
                 spinner.off();

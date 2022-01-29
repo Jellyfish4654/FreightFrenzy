@@ -9,7 +9,6 @@ public class Spinner {
 
     private CRServo servo;
 
-
     public Spinner(CRServo servo) {
         this.servo = servo;
     }
