@@ -5,10 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
 
 //import org.firstinspires.ftc.teamcode.framework.BaseOpMode;
 import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.components.Spinner;
+import org.firstinspires.ftc.teamcode.framework.components.Claw;
 
 @TeleOp(name = "UltimateGoal JelleTele")
 public class JelleTele extends LinearOpMode {
@@ -21,6 +23,7 @@ public class JelleTele extends LinearOpMode {
     protected DriveMode driveMode = DriveMode.MECANUM;
 
     protected DcMotor[] motors;
+    protected Claw claw;
     protected Spinner spinner;
     protected void initHardware() {
         motors = new DcMotor[] {
@@ -35,6 +38,10 @@ public class JelleTele extends LinearOpMode {
 
         CRServo carousel = hardwareMap.crservo.get("carousel");
         spinner = new Spinner(carousel);
+
+        DcMotor clawPivot = hardwareMap.dcMotor.get("claw-pivot");
+        Servo clawServo = hardwareMap.servo.get("claw-servo");
+        claw = new Claw(clawPivot, clawServo);
     }
 
     @Override
@@ -53,9 +60,6 @@ public class JelleTele extends LinearOpMode {
 
             
             double mult = gamepad1.left_bumper ? 0.2 : gamepad1.right_bumper ? 0.5 : 1.0;
-
-//            logger.addData("drive mode", driveMode);
-//            logger.addData("precision mode", mult);
 
             switch (driveMode) {
             case TANK: {
@@ -95,6 +99,20 @@ public class JelleTele extends LinearOpMode {
                 spinner.on(DcMotorSimple.Direction.REVERSE);
             } else {
                 spinner.off();
+            }
+
+            if (gamepad2.right_bumper) {
+                claw.grab();
+            } else {
+                claw.ungrab();
+            }
+
+            if (gamepad2.left_stick_y > 0) {
+                claw.up();
+            } else if (gamepad2.left_stick_y < 0) {
+                claw.down();
+            } else {
+                claw.off();
             }
 
 

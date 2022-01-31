@@ -1,10 +1,9 @@
-package org.firstinspires.ftc.teamcode.frameworks.components;
+package org.firstinspires.ftc.teamcode.framework.components;
 
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-public class Claw  {
-
+public class Claw {
     private static final double GRAB_POSITION = 1.0;
     private static final double UNGRAB_POSITION = 0.3;   
 
