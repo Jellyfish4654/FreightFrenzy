@@ -5,7 +5,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class Claw {
     private static final double GRAB_POSITION = 1.0;
-    private static final double UNGRAB_POSITION = 0.3;   
+    private static final double UNGRAB_POSITION = 0.5;
+    private static final double SPEED = 0.15;   
 
     private DcMotor pivot;
     private Servo servo;
@@ -16,11 +17,11 @@ public class Claw {
     }
 
     public void up() {
-        pivot.setPower(0.5);
+        pivot.setPower(SPEED);
     }
 
     public void down() {
-        pivot.setPower(-0.5);
+        pivot.setPower(-SPEED);
     }
 
     public void off() {
