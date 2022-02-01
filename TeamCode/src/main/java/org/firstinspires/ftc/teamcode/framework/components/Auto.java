@@ -55,13 +55,30 @@ public class Auto {
         final double direction = angle > 0 ? 1 : -1;
         final double initialAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
 
-        final double P = 1 / 5; // at an angle of 5 and above, P*angle >= 1
+        final double P = 1 / 15; // at an angle of 15 and above, P*angle >= 1
 
         return () -> {
             double currentAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
-            double diff = (currentAngle - initialAngle + 360) % 360;
+            double diff = (currentAngle - initialAngle + 360) % 360; // positive number, [0, 360]
 
-            motors[Motors.FR].setPower(1);
-        }
+            if (Math.abs(diff) <= 1) {
+                return true;
+            }
+
+            double pow;
+            if (direction == 1) {
+                pow = diff * P;
+            } else { // direction == -1
+                pow = (diff-360)*P;
+            }
+            if (pow > maxSpeed) pow = maxSpeed;
+            if (pow < -maxSpeed) pow = -maxSpeed;
+
+            motors[Motors.FR].setPower(pow);
+            motors[Motors.FL].setPower(pow);
+            motors[Motors.BR].setPower(-pow);
+            motors[Motors.BL].setPower(-pow);
+            return false;
+        };
     }
 }

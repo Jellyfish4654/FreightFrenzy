@@ -29,17 +29,25 @@ public interface Task {
      * Combines multiple tasks into one task that completes
      * when all of its tasks complete.
      */
-    public static Task all(Task... tasks) {
-        return new AllTask(tasks);
+    public static Task sim(Task... tasks) {
+        return new SimTask(tasks);
+    }
+
+    /**
+     * Creates a new Task
+     * that executes all previous tasks, sequentially.
+     */
+    public static Task seq(Task... tasks) {
+        return new SeqTask(tasks);
     }
 }
 
 // Class that is actually used in the implementation of the Task.all method
-class AllTask implements Task {
+class SimTask implements Task {
     Task[] tasks;
     boolean[] complete;
 
-    public AllTask(Task[] tasks) {
+    public SimTask(Task[] tasks) {
         this.tasks = tasks;
         complete = new boolean[tasks.length];
     }
@@ -57,5 +65,28 @@ class AllTask implements Task {
         }
 
         return allComplete;
+    }
+}
+
+class SeqTask implements Task {
+    Task[] tasks;
+    int idx;
+
+    public SeqTask(Task[] tasks) {
+        this.tasks =tasks;
+        idx = 0;
+    }
+
+    public boolean step() {
+        if (tasks[idx].step()) {
+            // if task complete increase idx
+            idx++;
+
+            if (idx == tasks.length) { // no more tasks
+                return true;
+            }
+        }
+
+        return false;
     }
 }
