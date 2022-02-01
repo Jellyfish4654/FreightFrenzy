@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.Motors;
 
 public class Auto {
-    private static final double ENCODERS_PER_IN = 5.0; // experimental testing needed
+    private static final double ENCODERS_PER_IN = 1.0; // experimental testing needed
 
     protected DcMotor[] motors;
     protected BNO055IMU imu;
@@ -22,7 +22,7 @@ public class Auto {
         int[] startPosition;
     }
     
-    public Task move(double distance, DcMotorSimple.Direction direction, double maxSpeed) {
+    public Task move(double distance, double maxSpeed) {
         // workaround because ban on mutable local variables
         final MoveState s = new MoveState();
         s.setTarget = false;
@@ -33,12 +33,11 @@ public class Auto {
                 // this section only run once
                 s.setTarget = true;
 
-                int m = direction == DcMotorSimple.Direction.FORWARD ? 1 : -1;
                 for (int i = 0; i < 4; i++) {
                     DcMotor motor = motors[i];
                     motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-                    motor.setTargetPosition(motor.getCurrentPosition() + (int)(m * ENCODERS_PER_IN * distance));
+                    motor.setTargetPosition(motor.getCurrentPosition() + (int)(ENCODERS_PER_IN * distance));
                     motor.setPower(maxSpeed);
                     s.startPosition[i] = motor.getCurrentPosition();
                 }

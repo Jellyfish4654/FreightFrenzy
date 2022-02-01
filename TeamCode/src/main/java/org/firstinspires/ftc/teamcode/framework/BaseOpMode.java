@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.components.Spinner;
@@ -14,6 +15,7 @@ public abstract class BaseOpMode extends LinearOpMode {
     protected DcMotor[] motors;
     protected Claw claw;
     protected Spinner spinner;
+    protected BNO055IMU imu;
     protected void initHardware() {
         motors = new DcMotor[] {
             hardwareMap.dcMotor.get("motor fr"),
@@ -31,5 +33,7 @@ public abstract class BaseOpMode extends LinearOpMode {
         DcMotor clawPivot = hardwareMap.dcMotor.get("claw-pivot");
         Servo clawServo = hardwareMap.servo.get("claw-servo");
         claw = new Claw(clawPivot, clawServo);
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
     }
 }

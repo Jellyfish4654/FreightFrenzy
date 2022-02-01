@@ -23,8 +23,8 @@ public class JelleTele extends BaseOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        waitForStart();
         initHardware();
+        waitForStart();
 
         while (opModeIsActive()) {
             if (gamepad1.dpad_left) {
