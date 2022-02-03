@@ -6,9 +6,14 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 
 import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.Motors;
+import org.firstinspires.ftc.teamcode.framework.BaseOpMode;
 
 public class Auto {
-    private static final double ENCODERS_PER_IN = 1.0; // experimental testing needed
+
+    // measurements
+    // 1000 ticks / 19 in
+    // 500 ticks / 9.5 in
+    private static final double ENCODERS_PER_IN = 500.0 / 9.5; // experimental testing needed
 
     protected DcMotor[] motors;
     protected BNO055IMU imu;
@@ -35,9 +40,9 @@ public class Auto {
 
                 for (int i = 0; i < 4; i++) {
                     DcMotor motor = motors[i];
-                    motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
                     motor.setTargetPosition(motor.getCurrentPosition() + (int)(ENCODERS_PER_IN * distance));
+                    motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     motor.setPower(maxSpeed);
                     s.startPosition[i] = motor.getCurrentPosition();
                 }
@@ -53,14 +58,20 @@ public class Auto {
     public Task pivot(double angle, double maxSpeed) {
         final double direction = angle > 0 ? 1 : -1;
         final double initialAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
+        final double targetAngle = (initialAngle + angle + 360) % 360;
 
-        final double P = 1 / 15; // at an angle of 15 and above, P*angle >= 1
+        final double P = 1.0 / 10.0; // at an angle of 10 and above, P*angle >= 1
+        // 0.2 power <=> 2 deg *P
+
+        for (DcMotor motor : motors) {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
 
         return () -> {
             double currentAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
-            double diff = (currentAngle - initialAngle + 360) % 360; // positive number, [0, 360]
+            double diff = (targetAngle - currentAngle + 360) % 360; // positive number, [0, 360]
 
-            if (Math.abs(diff) <= 1) {
+            if (Math.abs(diff) <= 2) {
                 return true;
             }
 
@@ -73,9 +84,17 @@ public class Auto {
             if (pow > maxSpeed) pow = maxSpeed;
             if (pow < -maxSpeed) pow = -maxSpeed;
 
+            BaseOpMode.tele.addData("initial", initialAngle);
+            BaseOpMode.tele.addData("target", targetAngle);
+            BaseOpMode.tele.addData("current", currentAngle);
+            BaseOpMode.tele.addData("diff", diff);
+            BaseOpMode.tele.addData("pow", pow);
+            BaseOpMode.tele.update();
+
+
             motors[Motors.FR].setPower(pow);
-            motors[Motors.FL].setPower(pow);
-            motors[Motors.BR].setPower(-pow);
+            motors[Motors.BR].setPower(pow);
+            motors[Motors.FL].setPower(-pow);
             motors[Motors.BL].setPower(-pow);
             return false;
         };

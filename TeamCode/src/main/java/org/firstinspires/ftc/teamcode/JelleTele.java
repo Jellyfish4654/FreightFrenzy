@@ -19,7 +19,7 @@ public class JelleTele extends BaseOpMode {
         MECANUM,
     }
 
-    protected DriveMode driveMode = DriveMode.MECANUM;
+    protected DriveMode driveMode = DriveMode.DRIVE;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -36,7 +36,12 @@ public class JelleTele extends BaseOpMode {
             }
 
             
-            double mult = gamepad1.left_bumper ? 0.2 : gamepad1.right_bumper ? 0.5 : 1.0;
+            // left = slow
+            // right = fast
+            double mult = gamepad1.left_bumper ? 0.2 : gamepad1.right_bumper ? 1.0 : 5.0;
+
+            telemetry.addData("drive mode", driveMode);
+            telemetry.addData("precision mode", mult);
 
             switch (driveMode) {
             case TANK: {

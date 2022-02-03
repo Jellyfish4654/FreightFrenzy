@@ -16,6 +16,11 @@ public class Jellauto extends BaseOpMode {
         
         waitForStart();
         
-        Task.run(dt.move(40.0, 0.5), this);
+        Task.run(
+            Task.seq(
+//                dt.move(18.0, 0.5),
+                dt.pivot(135, 0.5)
+            )
+        , this);
     }
 }
