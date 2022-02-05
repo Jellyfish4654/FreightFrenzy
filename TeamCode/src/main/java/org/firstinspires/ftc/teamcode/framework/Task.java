@@ -40,6 +40,25 @@ public interface Task {
     public static Task seq(Task... tasks) {
         return new SeqTask(tasks);
     }
+
+    /**
+     * Creates a new Task that 
+     * when executed executes the inner
+     * Task for at most N milliseconds.
+     */
+    public static Task wait(long millis, Task inner) {
+        final long start = System.currentTimeMillis();
+        return () -> {
+            if (System.currentTimeMillis() - start >= millis) {
+                return true;
+            }
+
+            if (inner != null)
+                return inner.step();
+            else
+                return false;
+        };
+    }
 }
 
 // Class that is actually used in the implementation of the Task.all method
