@@ -48,9 +48,13 @@ public interface Task {
      * Task for at most N milliseconds.
      */
     public static Task wait(long millis, Task inner) {
-        final long start = System.currentTimeMillis();
+        final WaitState state = new WaitState();
         return () -> {
-            if (System.currentTimeMillis() - start >= millis) {
+            if (state.start == 0) {
+                state.start = System.currentTimeMillis();
+            }
+
+            if (System.currentTimeMillis() - state.start >= millis) {
                 return true;
             }
 
@@ -60,6 +64,10 @@ public interface Task {
                 return false;
         };
     }
+}
+
+class WaitState {
+    public long start;
 }
 
 // Class that is actually used in the implementation of the Task.all method

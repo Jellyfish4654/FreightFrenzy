@@ -10,7 +10,7 @@ public class Claw {
     private static final double UNGRAB_POSITION = 0.5;
     private static final double SPEED = 0.25;   
 
-    private static final double ENCODERS_PER_DEG = 1;
+    private static final double ENCODERS_PER_DEG = 8.5;
 
     private DcMotor pivot;
     private Servo servo;
@@ -21,12 +21,15 @@ public class Claw {
     }
 
     public void moveUp() {
+        pivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         pivot.setPower(SPEED);
     }
     public void moveDown() {
+        pivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         pivot.setPower(-SPEED);
     }
     public void moveOff() {
+        pivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         pivot.setPower(0);
     }
 
@@ -38,9 +41,10 @@ public class Claw {
         state.initialized = false;
         return () -> {
             if (!state.initialized) {
+                pivot.setPower(SPEED/3);
                 pivot.setTargetPosition(pivot.getCurrentPosition() + (int)(ENCODERS_PER_DEG * angle));
                 pivot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                pivot.setPower(SPEED);
+                pivot.setPower(SPEED/3);
                 state.initialized = true;
                 return false;
             }

@@ -17,13 +17,28 @@ public class Jellauto extends BaseOpMode {
     protected static enum Position { WAREHOUSE, CAROUSEL }
     protected static enum Scoring { L1, L2, L3 }
 
-    protected Team team;
-    protected Position position;
+    protected Team team = Team.BLUE;
+    protected Position position = Position.CAROUSEL;
     protected Scoring scoring;
     
     protected Vision vision;
 
-    protected boolean containsElement(int[] profile) {
+    protected boolean hasElement() throws InterruptedException {
+        final BlockingQueue<Vision.Result<int[]>> profileQueue = new LinkedBlockingQueue();
+        vision.getColorProfile((profile) -> {
+            try {
+                profileQueue.put(profile);
+            } catch (Exception e) {}
+            return null;
+        });
+        Vision.Result<int[]> res = profileQueue.take();
+        if (res.error != null) {
+            throw new RuntimeException("vision error [1]: " + res.error);
+        }
+        return containsElement(res.value);
+    }
+
+    protected static boolean containsElement(int[] profile) {
         return profile[1] >= 100 && profile[2] >= 20 && profile[5] >= 20;
     }
 
@@ -34,7 +49,7 @@ public class Jellauto extends BaseOpMode {
         dt = new Auto(motors, imu);
         vision = new Vision("Webcam 1", hardwareMap);
 
-        while (opModeIsActive() && !isStarted()) {
+        while (!opModeIsActive() && !isStopRequested()) {
             if (gamepad1.x) team = Team.BLUE;
             if (gamepad1.b) team = Team.RED;
             if (gamepad1.dpad_up) position = Position.WAREHOUSE;
@@ -44,53 +59,28 @@ public class Jellauto extends BaseOpMode {
             telemetry.addData("position", position);
             telemetry.update();
         }
-        if (!opModeIsActive()) return;
+        waitForStart();
 
         // move claw up
-        if (Task.run(claw.up(135), this)) return;
+        if (Task.run(claw.up(180), this)) return;
 
-        /// center = L2 /// (appendix D)
-
-        // start camera read
-        final BlockingQueue<Vision.Result<int[]>> profileQueue = new LinkedBlockingQueue();
-        vision.getColorProfile((profile) -> {
-            try {
-                profileQueue.put(profile);
-            } catch (Exception e) {}
-            return null;
-        });
-
-        if (Task.run(dt.move(3, 0.5), this)) return;
-
-        // end camera read
-        Vision.Result<int[]> res = profileQueue.take();
-        if (res.error != null) {
-            throw new RuntimeException("vision error [2]: " + res.error);
-        }
-
-        if (containsElement(res.value)) {
+        if (hasElement()) {
+            /// center = L2 /// (appendix D)
             scoring = Scoring.L2;
+            if (Task.run(dt.move(5, 0.5), this)) return;
+            dt.stop();
         } else {
-        /// left = L1 ///
+            /// left = L1 ///
+            if (Task.run(dt.move(5, 0.5), this)) return;
 
             // pivot 30 degrees counterclockwise (left)
             if (Task.run(dt.pivot(30, 0.5), this)) return;
 
-            vision.getColorProfile((profile) -> {
-                try {
-                    profileQueue.put(profile);
-                } catch (Exception e) {}
-                return null;
-            });
-            res = profileQueue.take();
-            if (res.error != null) {
-                throw new RuntimeException("vision error [1]: " + res.error);
-            }
 
-            if (containsElement(res.value)) {
+            if (hasElement()) {
                 scoring = Scoring.L1;
             } else {
-        /// right = L3 ///
+            /// right = L3 ///
                 scoring = Scoring.L3;
             }
 
@@ -105,11 +95,21 @@ public class Jellauto extends BaseOpMode {
         if(Task.run(
             Task.seq(
                 dt.move(24+8, 0.5),
+                () -> {
+                    telemetry.addData("done moving", ":)");
+                    telemetry.update();
+                    return true;
+                },
                 dt.pivot((
                     (team == Team.RED && position == Position.WAREHOUSE) || (team == Team.BLUE && position == Position.CAROUSEL) ? // is the hub on the left?
                     -90 : // if so, turn right
                     90
-                    ), 0.5)
+                    ), 0.5),
+                () -> {
+                    telemetry.addData("done pivoting", ":)");
+                    telemetry.update();
+                    return true;
+                }
             )
         , this)) return;
 
@@ -123,6 +123,9 @@ public class Jellauto extends BaseOpMode {
             off = 4;
         }
         claw.ungrab(); // release!!!!!!!!!!
+
+        telemetry.addData("done scoring", "");
+        telemetry.update();
 
         int reverseRed = team == Team.RED ? -1 : 1; // "for blue"
         if (position == Position.CAROUSEL) {            

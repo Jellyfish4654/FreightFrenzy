@@ -54,24 +54,36 @@ public class Auto {
         };
     }
 
+    private static class PivotState {
+        boolean initialized;
+        double targetAngle;
+        double initialAngle;
+    }
+
     // angle in degrees
     public Task pivot(double angle, double maxSpeed) {
+        final PivotState state = new PivotState();
+        state.initialized = false;
+
         final double direction = angle > 0 ? 1 : -1;
-        final double initialAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
-        final double targetAngle = (initialAngle + angle + 360) % 360;
 
         final double P = 1.0 / 10.0; // at an angle of 10 and above, P*angle >= 1
         // 0.2 power <=> 2 deg *P
 
-        for (DcMotor motor : motors) {
-            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
-
         return () -> {
-            double currentAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
-            double diff = (targetAngle - currentAngle + 360) % 360; // positive number, [0, 360]
+            if (!state.initialized) {
+                state.initialAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
+                state.targetAngle = (state.initialAngle + angle + 360) % 360;
+                for (DcMotor motor : motors) {
+                    motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
+                state.initialized = true;
+            }
 
-            if (Math.abs(diff) <= 2) {
+            double currentAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
+            double diff = (state.targetAngle - currentAngle + 360) % 360; // positive number, [0, 360]
+
+            if (diff <= 2 || Math.abs(diff-360) <= 2) {
                 return true;
             }
 
@@ -84,13 +96,12 @@ public class Auto {
             if (pow > maxSpeed) pow = maxSpeed;
             if (pow < -maxSpeed) pow = -maxSpeed;
 
-            BaseOpMode.tele.addData("initial", initialAngle);
-            BaseOpMode.tele.addData("target", targetAngle);
+            BaseOpMode.tele.addData("initial", state.initialAngle);
+            BaseOpMode.tele.addData("target", state.targetAngle);
             BaseOpMode.tele.addData("current", currentAngle);
             BaseOpMode.tele.addData("diff", diff);
             BaseOpMode.tele.addData("pow", pow);
             BaseOpMode.tele.update();
-
 
             motors[Motors.FR].setPower(pow);
             motors[Motors.BR].setPower(pow);
@@ -98,5 +109,12 @@ public class Auto {
             motors[Motors.BL].setPower(-pow);
             return false;
         };
+    }
+
+    public void stop() {
+        for (DcMotor motor : motors) {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.setPower(0);
+        }
     }
 }
