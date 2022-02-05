@@ -67,14 +67,13 @@ public class Jellauto extends BaseOpMode {
         if (hasElement()) {
             /// center = L2 /// (appendix D)
             scoring = Scoring.L2;
-            if (Task.run(dt.move(5, 0.5), this)) return;
-            dt.stop();
+            if (Task.run(dt.move(5, 0.7), this)) return;
         } else {
             /// left = L1 ///
-            if (Task.run(dt.move(5, 0.5), this)) return;
+            if (Task.run(dt.move(5, 0.7), this)) return;
 
-            // pivot 30 degrees counterclockwise (left)
-            if (Task.run(dt.pivot(30, 0.5), this)) return;
+            // pivot counterclockwise (left)
+            if (Task.run(dt.pivot(12, 0.7), this)) return;
 
 
             if (hasElement()) {
@@ -84,7 +83,7 @@ public class Jellauto extends BaseOpMode {
                 scoring = Scoring.L3;
             }
 
-            if (Task.run(dt.pivot(-30, 0.5), this)) return;
+            if (Task.run(dt.pivot(-12, 0.7), this)) return;
         }
 
         telemetry.addData("team", team);
@@ -94,7 +93,7 @@ public class Jellauto extends BaseOpMode {
 
         if(Task.run(
             Task.seq(
-                dt.move(24+8, 0.5),
+                dt.move(24+8, 0.4),
                 () -> {
                     telemetry.addData("done moving", ":)");
                     telemetry.update();
@@ -113,37 +112,44 @@ public class Jellauto extends BaseOpMode {
             )
         , this)) return;
 
-        int off = 0;
-        if (scoring == Scoring.L2) {
-            if (Task.run(dt.move(2, 0.5), this)) return;
-            off = 2;
+
+        if (scoring == Scoring.L3) {
+            if (Task.run(claw.down(10), this)) return;
         } else if (scoring == Scoring.L1) {
-            // might not work..  pivot...?
-            if (Task.run(dt.move(4, 0.5), this)) return;
-            off = 4;
+            if (Task.run(Task.wait(500, claw.up(30)), this)) return;
         }
+
+        int off=0;
+        switch (scoring) {
+            case L1: off = -6; break;
+            case L2: off = -3; break;
+            case L3: off = -3; break;
+        };
+        if (Task.run(dt.move(off, 0.5), this)) return;
         claw.ungrab(); // release!!!!!!!!!!
 
         telemetry.addData("done scoring", "");
         telemetry.update();
+        
+        if (Task.run(Task.wait(2000, null), this)) return;
 
         int reverseRed = team == Team.RED ? -1 : 1; // "for blue"
         if (position == Position.CAROUSEL) {            
             if (Task.run(Task.seq(
-                dt.move(20 - off, 0.5),
-                dt.pivot(-90 * reverseRed, 0.5),
-                dt.move(24, 0.5),
-                Task.wait(5000, () -> { spinner.on(); return false; }),
-                () -> { spinner.off(); return true; },
-                dt.move(-24, 0.5)
+                dt.move(20 - off, 0.7),
+                dt.pivot(-100 * reverseRed, 0.5),
+//                dt.move(26, 0.7),
+//                Task.wait(5000, () -> { spinner.on(); return false; }),
+//                () -> { spinner.off(); return true; },
+                dt.move(-6, 0.7)
             ), this)) return;
 
             // :)
         } else {
             if (Task.run(Task.seq(
-                dt.move(4 - off, 0.5),  
+                dt.move(4 - off, 0.7),  
                 dt.pivot(90 * reverseRed, 0.5),
-                dt.move(4, 0.5),
+                dt.move(4, 0.7),
                 dt.pivot(90 * reverseRed, 0.5),
                 dt.move(36, 1)
             ), this)) return;

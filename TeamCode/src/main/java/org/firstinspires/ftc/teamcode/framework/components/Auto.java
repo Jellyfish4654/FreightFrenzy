@@ -49,7 +49,11 @@ public class Auto {
                 return false;
             } else {
                 // return true (complete) only if none of the motors are running
-                return !motors[0].isBusy() && !motors[1].isBusy() && !motors[2].isBusy() && !motors[3].isBusy();
+                boolean complete = !motors[0].isBusy() && !motors[1].isBusy() && !motors[2].isBusy() && !motors[3].isBusy();
+                if (complete) {
+                    stop();
+                }
+                return complete;
             }
         };
     }
@@ -84,6 +88,7 @@ public class Auto {
             double diff = (state.targetAngle - currentAngle + 360) % 360; // positive number, [0, 360]
 
             if (diff <= 2 || Math.abs(diff-360) <= 2) {
+                stop();
                 return true;
             }
 
