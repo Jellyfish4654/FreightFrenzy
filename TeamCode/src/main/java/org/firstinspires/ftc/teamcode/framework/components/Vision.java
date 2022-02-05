@@ -88,7 +88,7 @@ public class Vision {
         public List<int[]> colors;
     }
 
-    public void findAreas2(Function<Result<int[]>, Void> cb) {
+    public void getColorProfile(Function<Result<int[]>, Void> cb) {
         readPixels((data) -> {
             try {
                 int xc = data.width / 2;

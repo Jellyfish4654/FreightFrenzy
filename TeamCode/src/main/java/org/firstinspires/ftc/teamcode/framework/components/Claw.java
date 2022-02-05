@@ -3,10 +3,14 @@ package org.firstinspires.ftc.teamcode.framework.components;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.framework.Task;
+
 public class Claw {
     private static final double GRAB_POSITION = 1.0;
     private static final double UNGRAB_POSITION = 0.5;
     private static final double SPEED = 0.25;   
+
+    private static final double ENCODERS_PER_DEG = 1;
 
     private DcMotor pivot;
     private Servo servo;
@@ -16,16 +20,37 @@ public class Claw {
         this.servo=servo;
     }
 
-    public void up() {
+    public void moveUp() {
         pivot.setPower(SPEED);
     }
-
-    public void down() {
+    public void moveDown() {
         pivot.setPower(-SPEED);
     }
-
-    public void off() {
+    public void moveOff() {
         pivot.setPower(0);
+    }
+
+    private static class UpState {
+        boolean initialized;
+    }
+    public Task up(double angle) {
+        final UpState state = new UpState();
+        state.initialized = false;
+        return () -> {
+            if (!state.initialized) {
+                pivot.setTargetPosition(pivot.getCurrentPosition() + (int)(ENCODERS_PER_DEG * angle));
+                pivot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                pivot.setPower(SPEED);
+                state.initialized = true;
+                return false;
+            }
+
+            return !pivot.isBusy();
+        };
+    }
+
+    public Task down(double angle) {
+        return up(-angle);
     }
 
     public void grab() {

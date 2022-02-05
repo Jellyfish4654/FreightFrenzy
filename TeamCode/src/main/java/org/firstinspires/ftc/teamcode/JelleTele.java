@@ -88,11 +88,11 @@ public class JelleTele extends BaseOpMode {
             }
 
             if (gamepad2.left_stick_y > 0) {
-                claw.up();
+                claw.moveUp();
             } else if (gamepad2.left_stick_y < 0) {
-                claw.down();
+                claw.moveDown();
             } else {
-                claw.off();
+                claw.moveOff();
             }
 
 

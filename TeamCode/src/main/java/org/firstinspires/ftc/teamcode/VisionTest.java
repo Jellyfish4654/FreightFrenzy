@@ -30,7 +30,7 @@ public class VisionTest extends BaseOpMode {
             telemetry.update();
 
             final BlockingQueue<Vision.Result<int[]>> queue = new LinkedBlockingQueue();
-            vision.findAreas2((areas) -> {
+            vision.getColorProfile((areas) -> {
                 try {
                     queue.put(areas);
                 } catch(Exception e) {}

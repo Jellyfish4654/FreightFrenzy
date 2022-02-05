@@ -26,8 +26,9 @@ public interface Task {
     }
 
     /**
-     * Combines multiple tasks into one task that completes
-     * when all of its tasks complete.
+     * Combines multiple tasks into one task that
+     * executes all given tasks simultaneously
+     * amd completes when all of the tasks complete.
      */
     public static Task sim(Task... tasks) {
         return new SimTask(tasks);
@@ -35,7 +36,7 @@ public interface Task {
 
     /**
      * Creates a new Task
-     * that executes all previous tasks, sequentially.
+     * that executes all given tasks sequentially.
      */
     public static Task seq(Task... tasks) {
         return new SeqTask(tasks);
