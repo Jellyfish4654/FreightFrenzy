@@ -38,7 +38,7 @@ public class JelleTele extends BaseOpMode {
             
             // left = slow
             // right = fast
-            double mult = gamepad1.left_bumper ? 0.2 : gamepad1.right_bumper ? 1.0 : 5.0;
+            double mult = gamepad1.left_bumper ? 0.2 : gamepad1.right_bumper ? 1.0 : 0.5;
 
             telemetry.addData("drive mode", driveMode);
             telemetry.addData("precision mode", mult);
