@@ -41,10 +41,10 @@ public class Claw {
         state.initialized = false;
         return () -> {
             if (!state.initialized) {
-                pivot.setPower(SPEED/3);
+                pivot.setPower(SPEED/1.5);
                 pivot.setTargetPosition(pivot.getCurrentPosition() + (int)(ENCODERS_PER_DEG * angle));
                 pivot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                pivot.setPower(SPEED/3);
+                pivot.setPower(SPEED/1.5);
                 state.initialized = true;
                 return false;
             }
