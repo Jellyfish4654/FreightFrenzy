@@ -77,6 +77,8 @@ public class JelleTele extends BaseOpMode {
 
             if (gamepad2.x) {
                 spinner.on();
+            } else if (gamepad2.y) {
+                spinner.rev();
             } else {
                 spinner.off();
             }

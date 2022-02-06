@@ -15,4 +15,8 @@ public class Spinner {
     public void off(){
         servo.setPower(0);
     }
+
+    public void rev() {
+        servo.setPower(-1);
+    }
 }
