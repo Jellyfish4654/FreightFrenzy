@@ -20,16 +20,20 @@ public class Claw {
         this.servo=servo;
     }
 
-    public void moveUp() {
+    public void powerUp() {
         pivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         pivot.setPower(SPEED);
     }
-    public void moveDown() {
+    public void powerDown() {
         pivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         pivot.setPower(-SPEED);
     }
-    public void moveOff() {
-        pivot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public void powerOff() {
+        pivot.setPower(0);
+    }
+
+    public void fix() {
+        pivot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         pivot.setPower(0);
     }
 
