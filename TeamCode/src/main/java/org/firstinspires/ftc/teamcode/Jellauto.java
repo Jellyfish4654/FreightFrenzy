@@ -14,7 +14,7 @@ public class Jellauto extends BaseOpMode {
     protected Auto dt;
 
     protected static enum Team { RED, BLUE }
-    protected static enum Position { WAREHOUSE, CAROUSEL }
+    protected static enum Position { WAREHOUSE, CAROUSEL, SIMPLE }
     protected static enum Scoring { L1, L2, L3 }
 
     protected Team team = Team.BLUE;
@@ -54,12 +54,23 @@ public class Jellauto extends BaseOpMode {
             if (gamepad1.b) team = Team.RED;
             if (gamepad1.dpad_up) position = Position.WAREHOUSE;
             if (gamepad1.dpad_down) position = Position.CAROUSEL;
+            if (gamepad1.dpad_left) position = Position.SIMPLE;
 
             telemetry.addData("team", team);
             telemetry.addData("position", position);
             telemetry.update();
         }
         waitForStart();
+
+        final int reverseRed = team == Team.RED ? -1 : 1; // "for blue"
+        if (position == Position.SIMPLE) {
+            Task.run(Task.seq(
+                dt.move(8, 0.7),
+                dt.pivot(90 * reverseRed, 0.7),
+                dt.move(24*3, 0.7)
+            ), this);
+            return;
+        }
 
         // move claw up
         if (Task.run(claw.up(180), this)) return;
@@ -133,7 +144,6 @@ public class Jellauto extends BaseOpMode {
         
         if (Task.run(Task.wait(2000, null), this)) return;
 
-        int reverseRed = team == Team.RED ? -1 : 1; // "for blue"
         if (position == Position.CAROUSEL) {            
             if (Task.run(Task.seq(
                 dt.move(20 - off, 0.7),
