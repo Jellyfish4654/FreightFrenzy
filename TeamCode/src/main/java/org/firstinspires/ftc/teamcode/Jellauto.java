@@ -14,15 +14,17 @@ public class Jellauto extends BaseOpMode {
     protected Auto dt;
 
     protected static enum Team { RED, BLUE }
-    protected static enum Position { WAREHOUSE, CAROUSEL, SIMPLE }
-    protected static enum Scoring { L1, L2, L3 }
+    protected static enum Position { WAREHOUSE, CAROUSEL }
+    protected static enum Algorithm { SIMPLE }
+//    protected static enum Scoring { L1, L2, L3 }
 
     protected Team team = Team.BLUE;
     protected Position position = Position.CAROUSEL;
-    protected Scoring scoring;
+    protected Algorithm algorithm = Algorithm.SIMPLE;
+//    protected Scoring scoring;
     
-    protected Vision vision;
-
+//    protected Vision vision;
+/*
     protected boolean hasElement() throws InterruptedException {
         final BlockingQueue<Vision.Result<int[]>> profileQueue = new LinkedBlockingQueue();
         vision.getColorProfile((profile) -> {
@@ -40,28 +42,55 @@ public class Jellauto extends BaseOpMode {
 
     protected static boolean containsElement(int[] profile) {
         return profile[1] >= 100 && profile[2] >= 20 && profile[5] >= 20;
-    }
+    }*/
 
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware(); 
         claw.grab();
         dt = new Auto(motors, imu);
-        vision = new Vision("Webcam 1", hardwareMap);
+//        vision = new Vision("Webcam 1", hardwareMap);
 
         while (!opModeIsActive() && !isStopRequested()) {
             if (gamepad1.x) team = Team.BLUE;
             if (gamepad1.b) team = Team.RED;
-            if (gamepad1.dpad_up) position = Position.WAREHOUSE;
-            if (gamepad1.dpad_down) position = Position.CAROUSEL;
-            if (gamepad1.dpad_left) position = Position.SIMPLE;
+            if (gamepad1.left_bumper) position = Position.WAREHOUSE;
+            if (gamepad1.right_bumper) position = Position.CAROUSEL;
+            if (gamepad1.dpad_up) algorithm = Algorithm.SIMPLE;
 
             telemetry.addData("team", team);
             telemetry.addData("position", position);
+            telemetry.addData("algorithm", algorithm);
             telemetry.update();
         }
         waitForStart();
 
+        final double REV_IF_RED = team == Team.RED ? -1 : 1;
+
+        switch (algorithm) {
+        case SIMPLE:
+            if (position == Position.CAROUSEL) {
+                if (team == Team.BLUE) {
+                    Task.run(Task.seq(
+                        dt.move(4, -90, 0.5),
+                        dt.move(24, 180, 0.5),
+                        dt.move(18, -90, 0.5)
+                    ), this);
+                } else {
+                    Task.run(Task.seq(
+                        dt.move(8, 0, 0.5),
+                        dt.move(32, 90, 0.5),
+                        dt.move(18, 0, 0.5)
+                    ), this);
+                }
+            } else { // position == WAREHOUSE
+                Task.run(Task.seq(
+                    dt.move(48, 0, 0.5)
+                ), this);
+            }
+            break;
+        }
+/*
         final int reverseRed = team == Team.RED ? -1 : 1; // "for blue"
         if (position == Position.SIMPLE) {
             Task.run(Task.seq(
@@ -165,6 +194,6 @@ public class Jellauto extends BaseOpMode {
             ), this)) return;
 
             // :) parked
-        }
+        }*/
     }
 }
