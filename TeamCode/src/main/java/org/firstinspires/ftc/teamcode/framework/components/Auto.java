@@ -13,7 +13,7 @@ public class Auto {
     // measurements
     // 1000 ticks / 19 in
     // 500 ticks / 9.5 in
-    private static final double ENCODERS_PER_IN = 500.0 / 9.5; // experimental testing needed
+    public static final double ENCODERS_PER_IN = 500.0 / 9.5; // experimental testing needed
 
     protected DcMotor[] motors;
     protected BNO055IMU imu;
@@ -22,40 +22,8 @@ public class Auto {
         this.imu = imu;
     }
 
-    private static class MoveState {
-        boolean setTarget;
-        int[] startPosition;
-    }
-    
-    public Task move(double distance, double maxSpeed) {
-        // workaround because ban on mutable local variables
-        final MoveState s = new MoveState();
-        s.setTarget = false;
-        s.startPosition = new int[4];
-
-        return () -> {
-            if (!s.setTarget) {
-                // this section only run once
-                s.setTarget = true;
-
-                for (int i = 0; i < 4; i++) {
-                    DcMotor motor = motors[i];
-
-                    motor.setTargetPosition(motor.getCurrentPosition() + (int)(ENCODERS_PER_IN * distance));
-                    motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motor.setPower(maxSpeed);
-                    s.startPosition[i] = motor.getCurrentPosition();
-                }
-                return false;
-            } else {
-                // return true (complete) only if none of the motors are running
-                boolean complete = !motors[0].isBusy() && !motors[1].isBusy() && !motors[2].isBusy() && !motors[3].isBusy();
-                if (complete) {
-                    stop();
-                }
-                return complete;
-            }
-        };
+    public Task move(double distance, double angle, double maxSpeed) {
+        return new MoveTask(this.motors, distance, angle, maxSpeed);
     }
 
     private static class PivotState {
@@ -121,5 +89,59 @@ public class Auto {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             motor.setPower(0);
         }
+    }
+}
+
+class MoveTask implements Task {
+    private double encoderDist;
+    private double angle;
+    private double maxSpeed;
+
+    DcMotor[] motors;
+    public MoveTask(DcMotor[] motors, double distance, double angle, double maxSpeed) {
+        this.encoderDist = distance * Auto.ENCODERS_PER_IN;
+        this.angle = angle;
+        this.maxSpeed = maxSpeed;
+        this.motors = motors;
+    }
+
+    private static double encoderAverage(double value1, double value2) {
+        if (value1 == 0) return value2;
+        if (value2 == 0) return value1;
+        return  (value1+ value2)/2;
+    }
+
+    private boolean initialized;
+    public boolean step() {
+        if (!initialized) {
+            for (DcMotor motor: motors) {
+                motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+
+            initialized = true;
+        }
+
+        // a = [1,1]
+        // b = [-1,1]
+        double aDistTarget = encoderDist * Math.cos((angle + 45) * Math.PI / 180);
+        double bDistTarget = encoderDist * Math.sin((angle + 45) * Math.PI / 180);
+
+        double aDistCurrent = encoderAverage(motors[Motors.BL].getCurrentPosition(), motors[Motors.FR].getCurrentPosition());
+        double bDistCurrent = encoderAverage(motors[Motors.FL].getCurrentPosition(), motors[Motors.BR].getCurrentPosition());
+
+        double dist = Math.sqrt((aDistCurrent - aDistTarget)*(aDistCurrent - aDistTarget) + (bDistCurrent - bDistTarget)*(bDistCurrent - bDistTarget));
+        if (dist < 0.15 * Auto.ENCODERS_PER_IN) {
+            return true;
+        }
+        double pow = dist * 0.1;
+
+        double aVel = pow * Math.cos((angle + 45) * Math.PI / 180);
+        double bVel = pow * Math.sin((angle + 45) * Math.PI / 180);
+        motors[Motors.BL].setPower(aVel);
+        motors[Motors.FR].setPower(aVel);
+        motors[Motors.BR].setPower(bVel);
+        motors[Motors.FL].setPower(bVel);
+        return false;
     }
 }

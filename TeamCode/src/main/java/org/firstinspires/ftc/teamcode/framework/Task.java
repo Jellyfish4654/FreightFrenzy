@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.framework;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-/** This class represents a method that will be called repeatedly in a loop. */
+/** This class represents a method that will be called repeatedly in a loop.
+ * Each Task can only be used once.
+ */
 public interface Task {
     /**
      * Runs one step of a task. This should not be called after the task is complete.
