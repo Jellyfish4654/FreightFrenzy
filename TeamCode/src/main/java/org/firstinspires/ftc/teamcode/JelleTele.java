@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.framework.BaseOpMode;
 import org.firstinspires.ftc.teamcode.framework.Motors;
+import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.components.Spinner;
 import org.firstinspires.ftc.teamcode.framework.components.Claw;
 
@@ -19,7 +20,9 @@ public class JelleTele extends BaseOpMode {
         MECANUM,
     }
 
-    protected DriveMode driveMode = DriveMode.DRIVE;
+    protected DriveMode driveMode = DriveMode.MECANUM;
+
+    protected Task spinnerTask = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -35,13 +38,11 @@ public class JelleTele extends BaseOpMode {
                 driveMode = DriveMode.DRIVE;
             }
 
-            
-            // left = slow
-            // right = fast
             double mult = gamepad1.left_bumper ? 0.35 : gamepad1.right_bumper ? 0.7 : 1.0;
 
             telemetry.addData("drive mode", driveMode);
             telemetry.addData("precision mode", mult);
+            telemetry.update();
 
             switch (driveMode) {
             case TANK: {
@@ -76,11 +77,19 @@ public class JelleTele extends BaseOpMode {
             }
 
             if (gamepad2.x) {
-                spinner.on();
-            } else if (gamepad2.y) {
-                spinner.rev();
-            } else {
+                spinnerTask = spinner.run(DcMotorSimple.Direction.FORWARD);
+            } else if (gamepad2.b) {
+                spinnerTask = spinner.run(DcMotorSimple.Direction.REVERSE);
+            } else if (gamepad2.a) {
                 spinner.off();
+                spinnerTask = null;
+            } else {
+                if (spinnerTask != null) {
+                    boolean completed = spinnerTask.step();
+                    if (completed) {
+                        spinnerTask = null;
+                    }
+                }
             }
 
             if (gamepad2.right_bumper) {

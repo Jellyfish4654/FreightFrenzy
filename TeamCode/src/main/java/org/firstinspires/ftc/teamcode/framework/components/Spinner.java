@@ -22,9 +22,38 @@ public class Spinner {
         motor.setPower(-0.2);
     }
 
-    public Task spin(DcMotorSimple.Direction direction) {
-        double dir = direction == DcMotorSimple.Direction.FORWARD ? 1 : -1;
-        // TODO...
-        return null;
+    public Task run(DcMotorSimple.Direction direction) {
+        return new SpinnerTask(motor, direction);
+    }
+}
+
+class SpinnerTask implements Task {
+    DcMotor motor;
+    double dir;
+    public SpinnerTask(DcMotor motor, DcMotorSimple.Direction direction) {
+        dir = direction == DcMotorSimple.Direction.FORWARD ? 1 : -1;
+        this.motor = motor;
+    }
+
+    boolean initialized = false;
+    public boolean step() {
+        if (!initialized) {
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            initialized = true;
+        }
+
+        if (motor.getCurrentPosition() < 1575) {
+            motor.setPower(0.2 * dir);
+        } else if (motor.getCurrentPosition() < 1575+525) {
+            motor.setPower(1 * dir);
+        } else {
+            motor.setPower(0);
+            return true;
+        }
+
+        return false;
     }
 }

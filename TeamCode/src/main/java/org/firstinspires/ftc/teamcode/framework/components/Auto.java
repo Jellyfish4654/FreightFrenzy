@@ -8,8 +8,8 @@ import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.BaseOpMode;
 
+/** Represents a drivetrain, for use during autonomous */
 public class Auto {
-
     // measurements
     // 1000 ticks / 19 in
     // 500 ticks / 9.5 in
@@ -108,7 +108,7 @@ class MoveTask implements Task {
     private static double encoderAverage(double value1, double value2) {
         if (value1 == 0) return value2;
         if (value2 == 0) return value1;
-        return  (value1+ value2)/2;
+        return (value1 + value2)/2;
     }
 
     private final static double KP = 0.1;
@@ -136,7 +136,7 @@ class MoveTask implements Task {
         double bDistCurrent = encoderAverage(motors[Motors.FL].getCurrentPosition(), motors[Motors.BR].getCurrentPosition());
 
         double dist = Math.sqrt((aDistCurrent - aDistTarget)*(aDistCurrent - aDistTarget) + (bDistCurrent - bDistTarget)*(bDistCurrent - bDistTarget)) * Math.signum(aDistTarget - aDistCurrent);
-        if (dist < 0.15 * Auto.ENCODERS_PER_IN) {
+        if (dist < 0.1 * Auto.ENCODERS_PER_IN) {
             return true;
         }
 
