@@ -111,7 +111,12 @@ class MoveTask implements Task {
         return  (value1+ value2)/2;
     }
 
+    private final static double KP = 0.1;
+    private final static double KD = 0;
+
     private boolean initialized;
+    private double previousDist;
+    private long previousTime;
     public boolean step() {
         if (!initialized) {
             for (DcMotor motor: motors) {
@@ -134,7 +139,16 @@ class MoveTask implements Task {
         if (dist < 0.15 * Auto.ENCODERS_PER_IN) {
             return true;
         }
-        double pow = dist * 0.1;
+
+        double pow;
+        if (previousTime == 0) {
+            pow = dist*KP;
+        } else {
+            long time = System.currentTimeMillis();
+            pow = dist*KP + (dist-previousDist)/(time-previousTime)*KD;
+            previousDist = dist;
+            previousTime = time;
+        }
 
         double aVel = pow * Math.cos((angle + 45) * Math.PI / 180);
         double bVel = pow * Math.sin((angle + 45) * Math.PI / 180);
