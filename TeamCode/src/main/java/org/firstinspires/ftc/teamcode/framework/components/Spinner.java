@@ -1,25 +1,25 @@
 package org.firstinspires.ftc.teamcode.framework.components;
 
-import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.teamcode.framework.Task;
 public class Spinner {
-    private CRServo servo;
+    private DcMotor motor;
 
-    public Spinner(CRServo servo) {
-        this.servo = servo;
+    public Spinner(DcMotor motor) {
+        this.motor = motor;
     }
 
     public void on() {
-        servo.setPower(1);
+        motor.setPower(0.2);
     }
     
     public void off(){
-        servo.setPower(0);
+        motor.setPower(0);
     }
 
     public void rev() {
-        servo.setPower(-1);
+        motor.setPower(-0.2);
     }
 
     public Task spin(DcMotorSimple.Direction direction) {

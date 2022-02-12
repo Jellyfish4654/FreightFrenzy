@@ -130,7 +130,7 @@ class MoveTask implements Task {
         double aDistCurrent = encoderAverage(motors[Motors.BL].getCurrentPosition(), motors[Motors.FR].getCurrentPosition());
         double bDistCurrent = encoderAverage(motors[Motors.FL].getCurrentPosition(), motors[Motors.BR].getCurrentPosition());
 
-        double dist = Math.sqrt((aDistCurrent - aDistTarget)*(aDistCurrent - aDistTarget) + (bDistCurrent - bDistTarget)*(bDistCurrent - bDistTarget)) * Math.signum(aDistCurrent - aDistTarget);
+        double dist = Math.sqrt((aDistCurrent - aDistTarget)*(aDistCurrent - aDistTarget) + (bDistCurrent - bDistTarget)*(bDistCurrent - bDistTarget)) * Math.signum(aDistTarget - aDistCurrent);
         if (dist < 0.15 * Auto.ENCODERS_PER_IN) {
             return true;
         }
