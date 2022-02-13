@@ -40,7 +40,7 @@ public abstract class BaseOpMode extends LinearOpMode {
 
         DcMotor clawPivot = hardwareMap.dcMotor.get("claw-pivot");
         Servo clawServo = hardwareMap.servo.get("claw-servo");
-        clawPivot.setDirection(DcMotorSimple.Direction.REVERSE);
+        clawPivot.setDirection(DcMotorSimple.Direction.FORWARD);
         claw = new Claw(clawPivot, clawServo);
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");

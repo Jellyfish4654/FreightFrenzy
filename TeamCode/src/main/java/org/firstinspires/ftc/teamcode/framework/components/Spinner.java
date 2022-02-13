@@ -9,17 +9,9 @@ public class Spinner {
     public Spinner(DcMotor motor) {
         this.motor = motor;
     }
-
-    public void on() {
-        motor.setPower(0.2);
-    }
     
     public void off(){
         motor.setPower(0);
-    }
-
-    public void rev() {
-        motor.setPower(-0.2);
     }
 
     public Task run(DcMotorSimple.Direction direction) {
