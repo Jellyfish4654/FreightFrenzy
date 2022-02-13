@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DcMotor;
+
 import org.firstinspires.ftc.teamcode.framework.BaseOpMode;
 import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.components.Auto;
@@ -15,7 +18,7 @@ public class Jellauto extends BaseOpMode {
 
     protected static enum Team { RED, BLUE }
     protected static enum Position { WAREHOUSE, CAROUSEL }
-    protected static enum Algorithm { SIMPLE }
+    protected static enum Algorithm { TEST, SIMPLE, VISION }
 //    protected static enum Scoring { L1, L2, L3 }
 
     protected Team team = Team.BLUE;
@@ -56,7 +59,9 @@ public class Jellauto extends BaseOpMode {
             if (gamepad1.b) team = Team.RED;
             if (gamepad1.left_bumper) position = Position.WAREHOUSE;
             if (gamepad1.right_bumper) position = Position.CAROUSEL;
+            if (gamepad1.dpad_down) algorithm = Algorithm.TEST;
             if (gamepad1.dpad_up) algorithm = Algorithm.SIMPLE;
+            if (gamepad1.dpad_left) algorithm = Algorithm.VISION;
 
             telemetry.addData("team", team);
             telemetry.addData("position", position);
@@ -68,19 +73,37 @@ public class Jellauto extends BaseOpMode {
         final double REV_IF_RED = team == Team.RED ? -1 : 1;
 
         switch (algorithm) {
+        case TEST:
+            Task.run(Task.seq(
+                dt.move(14, 0, 0.3),
+                dt.move(14, -90, 0.5),
+                Task.wait(5000, null),
+                dt.pivot(90, 0.5)
+            ), this);
+            break;
         case SIMPLE:
             if (position == Position.CAROUSEL) {
                 if (team == Team.BLUE) {
                     Task.run(Task.seq(
-                        dt.move(4, -90, 0.5),
-                        dt.move(24, 180, 0.5),
-                        dt.move(18, -90, 0.5)
+                        dt.move(12, 90, 0.5),
+                        dt.move(32, 180, 0.5),
+                        Task.seq(
+                            Task.wait(200, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
+                            () -> { for (DcMotor motor: motors) { motor.setPower(0); }; return true; }
+                        ),
+                        spinner.run(DcMotorSimple.Direction.REVERSE), // blue = reverse
+                        dt.move(64, 90, 0.5)
                     ), this);
                 } else {
                     Task.run(Task.seq(
-                        dt.move(8, 0, 0.5),
-                        dt.move(32, 90, 0.5),
-                        dt.move(18, 0, 0.5)
+                        dt.move(6, 0, 0.5),
+                        dt.move(48, -90, 0.5),
+                        Task.seq(
+                            Task.wait(200, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
+                            () -> { for (DcMotor motor: motors) { motor.setPower(0); }; return true; }
+                        ),
+                        spinner.run(DcMotorSimple.Direction.FORWARD), // red = forward
+                        dt.move(32, 0, 0.5)
                     ), this);
                 }
             } else { // position == WAREHOUSE
@@ -89,6 +112,9 @@ public class Jellauto extends BaseOpMode {
                 ), this);
             }
             break;
+/*        case VISION:
+
+            break;*/
         }
 /*
         final int reverseRed = team == Team.RED ? -1 : 1; // "for blue"

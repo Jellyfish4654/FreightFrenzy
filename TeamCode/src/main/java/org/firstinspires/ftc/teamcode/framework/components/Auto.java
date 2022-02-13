@@ -13,7 +13,10 @@ public class Auto {
     // measurements
     // 1000 ticks / 19 in
     // 500 ticks / 9.5 in
-    public static final double ENCODERS_PER_IN = 500.0 / 9.5; // experimental testing needed
+    // new
+    // 500 ticks / 14 in
+
+    public static final double ENCODERS_PER_IN = 500 / 14; // experimental testing needed
 
     protected DcMotor[] motors;
     protected BNO055IMU imu;
@@ -22,8 +25,9 @@ public class Auto {
         this.imu = imu;
     }
 
+    // positive angle = right
     public Task move(double distance, double angle, double maxSpeed) {
-        return new MoveTask(this.motors, distance, angle, maxSpeed);
+        return new MoveTask(motors, imu, distance, angle, maxSpeed);
     }
 
     private static class PivotState {
@@ -97,12 +101,15 @@ class MoveTask implements Task {
     private double angle;
     private double maxSpeed;
 
-    DcMotor[] motors;
-    public MoveTask(DcMotor[] motors, double distance, double angle, double maxSpeed) {
+    protected DcMotor[] motors;
+    protected BNO055IMU imu;
+
+    public MoveTask(DcMotor[] motors, BNO055IMU imu, double distance, double angle, double maxSpeed) {
         this.encoderDist = distance * Auto.ENCODERS_PER_IN;
         this.angle = angle;
         this.maxSpeed = maxSpeed;
         this.motors = motors;
+        this.imu = imu;
     }
 
     private static double encoderAverage(double value1, double value2) {
@@ -111,18 +118,21 @@ class MoveTask implements Task {
         return (value1 + value2)/2;
     }
 
-    private final static double KP = 0.1;
-    private final static double KD = 0;
+    private final static double KP = 0.001;
+    private final static double KD = 0.0005;
 
     private boolean initialized;
     private double previousDist;
     private long previousTime;
+    private double currentAngle;
+    private double targetAngle;
     public boolean step() {
         if (!initialized) {
             for (DcMotor motor: motors) {
                 motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
+            targetAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
 
             initialized = true;
         }
@@ -135,11 +145,24 @@ class MoveTask implements Task {
         double aDistCurrent = encoderAverage(motors[Motors.BL].getCurrentPosition(), motors[Motors.FR].getCurrentPosition());
         double bDistCurrent = encoderAverage(motors[Motors.FL].getCurrentPosition(), motors[Motors.BR].getCurrentPosition());
 
-        double dist = Math.sqrt((aDistCurrent - aDistTarget)*(aDistCurrent - aDistTarget) + (bDistCurrent - bDistTarget)*(bDistCurrent - bDistTarget)) * Math.signum(aDistTarget - aDistCurrent);
-        if (dist < 0.1 * Auto.ENCODERS_PER_IN) {
+        BaseOpMode.tele.addData("target", aDistTarget);
+        BaseOpMode.tele.addData("current", aDistCurrent);
+        BaseOpMode.tele.update();
+
+        double dist = Math.sqrt((aDistCurrent - aDistTarget)*(aDistCurrent - aDistTarget) + (bDistCurrent - bDistTarget)*(bDistCurrent - bDistTarget)) * Math.signum(aDistTarget*(aDistTarget - aDistCurrent));
+        if (Math.abs(dist) < 0.2 * Auto.ENCODERS_PER_IN) {
+            for (DcMotor motor: motors) {
+                motor.setPower(0);
+            }
             return true;
         }
 
+        // calculate distance in angle
+        double currentAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
+        double angleDiff = (targetAngle - currentAngle + 360) % 360; // positive number, [0, 360]
+        double anglePow = angleDiff * 0.05;
+
+        // calculate power
         double pow;
         if (previousTime == 0) {
             pow = dist*KP;
@@ -150,12 +173,19 @@ class MoveTask implements Task {
             previousTime = time;
         }
 
+        if (pow > maxSpeed) {
+            pow = maxSpeed;
+        }
+        if (pow < -maxSpeed) {
+            pow = -maxSpeed;
+        }
+
         double aVel = pow * Math.cos((angle + 45) * Math.PI / 180);
         double bVel = pow * Math.sin((angle + 45) * Math.PI / 180);
-        motors[Motors.BL].setPower(aVel);
-        motors[Motors.FR].setPower(aVel);
-        motors[Motors.BR].setPower(bVel);
-        motors[Motors.FL].setPower(bVel);
+        motors[Motors.BL].setPower(aVel - anglePow);
+        motors[Motors.FR].setPower(aVel + anglePow);
+        motors[Motors.BR].setPower(bVel + anglePow);
+        motors[Motors.FL].setPower(bVel - anglePow);
         return false;
     }
 }

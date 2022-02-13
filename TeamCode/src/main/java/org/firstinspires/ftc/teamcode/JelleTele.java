@@ -76,10 +76,10 @@ public class JelleTele extends BaseOpMode {
             }
             }
 
-            if (gamepad2.x) {
-                spinnerTask = spinner.run(DcMotorSimple.Direction.FORWARD);
-            } else if (gamepad2.b) {
+            if (gamepad2.x) { // blue
                 spinnerTask = spinner.run(DcMotorSimple.Direction.REVERSE);
+            } else if (gamepad2.b) { // red
+                spinnerTask = spinner.run(DcMotorSimple.Direction.FORWARD);
             } else if (gamepad2.a) {
                 spinner.off();
                 spinnerTask = null;

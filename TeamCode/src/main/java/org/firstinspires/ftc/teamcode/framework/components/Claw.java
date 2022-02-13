@@ -33,8 +33,9 @@ public class Claw {
     }
 
     public void fix() {
-        pivot.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        pivot.setPower(0);
+        pivot.setPower(1);
+        pivot.setTargetPosition(pivot.getCurrentPosition());
+        pivot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     private static class UpState {
