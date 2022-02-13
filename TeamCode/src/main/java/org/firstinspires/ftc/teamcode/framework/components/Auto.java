@@ -118,8 +118,8 @@ class MoveTask implements Task {
         return (value1 + value2)/2;
     }
 
-    private final static double KP = 0.001;
-    private final static double KD = 0.0005;
+    private final static double KP = 0.005;
+    private final static double KD = 0.001;
 
     private boolean initialized;
     private double previousDist;
@@ -160,7 +160,10 @@ class MoveTask implements Task {
         // calculate distance in angle
         double currentAngle = ((imu.getAngularOrientation().firstAngle % 360) + 360) % 360;
         double angleDiff = (targetAngle - currentAngle + 360) % 360; // positive number, [0, 360]
-        double anglePow = angleDiff * 0.05;
+        if (angleDiff > 180) {
+            angleDiff -= 360;
+        }
+        double anglePow = angleDiff * 0.001;
 
         // calculate power
         double pow;

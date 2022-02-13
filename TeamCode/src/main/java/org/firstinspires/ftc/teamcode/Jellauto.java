@@ -85,10 +85,10 @@ public class Jellauto extends BaseOpMode {
             if (position == Position.CAROUSEL) {
                 if (team == Team.BLUE) {
                     Task.run(Task.seq(
-                        dt.move(12, 90, 0.5),
-                        dt.move(32, 180, 0.5),
+                        dt.move(13, 90, 0.5),
+                        dt.move(36, 180, 0.5),
                         Task.seq(
-                            Task.wait(200, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
+                            Task.wait(300, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
                             () -> { for (DcMotor motor: motors) { motor.setPower(0); }; return true; }
                         ),
                         spinner.run(DcMotorSimple.Direction.REVERSE), // blue = reverse
@@ -96,14 +96,18 @@ public class Jellauto extends BaseOpMode {
                     ), this);
                 } else {
                     Task.run(Task.seq(
-                        dt.move(6, 0, 0.5),
-                        dt.move(48, -90, 0.5),
+                        dt.move(14, -90, 0.5),
+                        dt.pivot(90, 0.5),
+                        dt.move(64, -90, 0.5),
+                        dt.move(12, 180, 0.5),
                         Task.seq(
-                            Task.wait(200, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
+                            Task.wait(300, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
                             () -> { for (DcMotor motor: motors) { motor.setPower(0); }; return true; }
                         ),
                         spinner.run(DcMotorSimple.Direction.FORWARD), // red = forward
-                        dt.move(32, 0, 0.5)
+                        dt.move(40, 0, 0.5),
+                        dt.pivot(-65, 0.5),
+                        dt.move(10, 180, 0.5)
                     ), this);
                 }
             } else { // position == WAREHOUSE
