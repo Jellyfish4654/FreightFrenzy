@@ -15,8 +15,12 @@ public class Auto {
     }
 
     protected Pose pose;
-    public Pose position() {
+    public PositioningTask position() {
         return new PositioningTask(motors, this.pose);
+    }
+
+    public Pose getPose() {
+        return this.pose.clone();
     }
 
     public static class Pose {
