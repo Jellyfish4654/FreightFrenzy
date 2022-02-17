@@ -38,7 +38,7 @@ class SpinnerTask implements Task {
         }
 
         if (Math.abs(motor.getCurrentPosition()) < 1575) {
-            motor.setPower(0.3 * dir); // faster?
+            motor.setPower(0.35 * dir); // faster?
         } else if (Math.abs(motor.getCurrentPosition()) < 1575+1050) {
             motor.setPower(1 * dir);
         } else {
