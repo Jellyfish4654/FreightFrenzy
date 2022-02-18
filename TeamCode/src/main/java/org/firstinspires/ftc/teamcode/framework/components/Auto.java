@@ -8,7 +8,99 @@ import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.BaseOpMode;
 
-/** Represents a drivetrain, for use during autonomous */
+public class Auto {
+    protected DcMotor[] motors;
+    public Auto(DcMotor[] motors) {
+        this.motors = motors;
+    }
+
+    protected Pose pose;
+    public PositioningTask position() {
+        return new PositioningTask(motors, this.pose);
+    }
+
+    public Pose getPose() {
+        return this.pose.clone();
+    }
+
+    public static class Pose {
+        public Pose(double x, double y, double angle) {
+            this.x = x;
+            this.y = y;
+            this.angle = angle;
+        }
+
+        public Pose clone() {
+            return new Pose(x, y, angle);
+        }
+
+        public double x;
+        public double y;
+        public double angle;
+
+        /** Forward offset; positive if horizontal encoder in front, negative if in back */
+        private final static double F = -1;
+
+        /** The lateral distance, distance between the two vertical encoders */
+        private final static double L = 1;
+
+        public void applyDiff(double d_left, double d_right, double d_horiz) {
+            double phi = (d_left - d_right) / L;
+            double dxc = (d_left + d_right) / 2,
+                dxh = d_horiz - (F * phi);
+
+            double[] diff = calculateDiff(dxc, dxh, phi, angle);
+            x += diff[0];
+            y += diff[1];
+            angle += phi;
+        }
+
+        /** Given dxc (forward/back), dxh (horizontal), and phi (angle), return dx, dy */
+        private static double[] calculateDiff(double dxc, double dxh, double phi, double prev_angle) {
+            // i think i did this wrong
+            // need to double check
+            double dxc2 = dxc * Math.sin(phi)/phi + dxh * ((Math.cos(phi) - 1) / phi),
+                dxh2 = dxc * ((1 - Math.cos(phi)) / phi) + dxh * Math.sin(phi)/phi;
+
+            double dx = dxc2 * Math.cos(prev_angle) + dxh2 * -Math.sin(prev_angle),
+                dy = dxc2 * Math.sin(prev_angle) + dxh2 * Math.cos(prev_angle);
+
+            return new double[] {dx, dy};
+        }
+    }
+}
+
+class PositioningTask implements Task {
+    protected DcMotor[] motors;
+    protected Auto.Pose pose_;
+
+    public PositioningTask(DcMotor[] motors, Auto.Pose poseToUpdate) {
+        this.motors = motors;
+        pose_ = poseToUpdate;
+    }
+
+    /** Previous encoder positions */
+    protected double[] prevEncoderPosition = new double[3];
+    protected double[] currEncoderPosition = new double[3];
+    public boolean step() {
+        for (int i = 0; i < 3; i++) {
+            currEncoderPosition[i] = motors[i].getCurrentPosition();
+        }
+
+        pose_.applyDiff(currEncoderPosition[Motors.E_L] - prevEncoderPosition[Motors.E_L],
+            currEncoderPosition[Motors.E_R] - prevEncoderPosition[Motors.E_R],
+            currEncoderPosition[Motors.E_H] - prevEncoderPosition[Motors.E_H]);
+
+        for (int i = 0; i < 3; i++) {
+            prevEncoderPosition[i] = currEncoderPosition[i];
+        }
+        return false;
+    }
+}
+
+
+/* OLD AUTO CLASS
+/** Represents a drivetrain, for use during autonomous *
 public class Auto {
     // measurements
     // 1000 ticks / 19 in
@@ -118,7 +210,7 @@ class MoveTask implements Task {
         return (value1 + value2)/2;
     }
 
-    private final static double KP = 0.005;
+    private final static double KP = 0.003;
     private final static double KD = 0.001;
 
     private boolean initialized;
@@ -150,7 +242,7 @@ class MoveTask implements Task {
         BaseOpMode.tele.update();
 
         double dist = Math.sqrt((aDistCurrent - aDistTarget)*(aDistCurrent - aDistTarget) + (bDistCurrent - bDistTarget)*(bDistCurrent - bDistTarget)) * Math.signum(aDistTarget*(aDistTarget - aDistCurrent));
-        if (Math.abs(dist) < 0.2 * Auto.ENCODERS_PER_IN) {
+        if (Math.abs(dist) < 1 * Auto.ENCODERS_PER_IN) {
             for (DcMotor motor: motors) {
                 motor.setPower(0);
             }
@@ -191,4 +283,4 @@ class MoveTask implements Task {
         motors[Motors.FL].setPower(bVel - anglePow);
         return false;
     }
-}
+} */

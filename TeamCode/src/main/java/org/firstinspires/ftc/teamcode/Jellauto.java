@@ -85,18 +85,19 @@ public class Jellauto extends BaseOpMode {
             if (position == Position.CAROUSEL) {
                 if (team == Team.BLUE) {
                     Task.run(Task.seq(
-                        dt.move(13, 90, 0.5),
+                        dt.move(16, 90, 0.5),
                         dt.move(36, 180, 0.5),
                         Task.seq(
                             Task.wait(300, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
                             () -> { for (DcMotor motor: motors) { motor.setPower(0); }; return true; }
                         ),
                         spinner.run(DcMotorSimple.Direction.REVERSE), // blue = reverse
-                        dt.move(64, 90, 0.5)
+                        dt.move(50, 90, 0.5),
+                        dt.move(8, 180, 0.5)
                     ), this);
                 } else {
                     Task.run(Task.seq(
-                        dt.move(14, -90, 0.5),
+                        dt.move(22, -90, 0.5),
                         dt.pivot(90, 0.5),
                         dt.move(64, -90, 0.5),
                         dt.move(12, 180, 0.5),
