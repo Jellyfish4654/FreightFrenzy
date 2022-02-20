@@ -36,6 +36,10 @@ public abstract class BaseOpMode extends LinearOpMode {
         motors[Motors.FL].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[Motors.BL].setDirection(DcMotorSimple.Direction.REVERSE);
 
+        for (DcMotor motor: motors) {
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+
         DcMotor carousel = hardwareMap.dcMotor.get("carousel");
         spinner = new Spinner(carousel);
 
