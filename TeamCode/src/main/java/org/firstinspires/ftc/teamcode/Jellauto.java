@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.framework.components.Vision;
 
 import java.util.concurrent.BlockingQueue;  
 import java.util.concurrent.LinkedBlockingQueue;
-
+/*
 @Autonomous(name = "Jellauto")
 public class Jellauto extends BaseOpMode {
     protected Auto dt;
@@ -45,7 +45,7 @@ public class Jellauto extends BaseOpMode {
 
     protected static boolean containsElement(int[] profile) {
         return profile[1] >= 100 && profile[2] >= 20 && profile[5] >= 20;
-    }*/
+    }*
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -119,7 +119,7 @@ public class Jellauto extends BaseOpMode {
             break;
 /*        case VISION:
 
-            break;*/
+            break;*
         }
 /*
         final int reverseRed = team == Team.RED ? -1 : 1; // "for blue"
@@ -225,6 +225,7 @@ public class Jellauto extends BaseOpMode {
             ), this)) return;
 
             // :) parked
-        }*/
+        }*
     }
 }
+*/

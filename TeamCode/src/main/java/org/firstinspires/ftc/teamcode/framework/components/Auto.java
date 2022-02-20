@@ -14,13 +14,13 @@ public class Auto {
         this.motors = motors;
     }
 
-    protected Pose pose;
+    public Pose pose = null;
     public PositioningTask position() {
         return new PositioningTask(motors, this.pose);
     }
 
-    public Pose getPose() {
-        return this.pose.clone();
+    public Task moveTo(Pose target) {
+        return new MoveTask(motors, target, this);
     }
 
     public static class Pose {
@@ -44,7 +44,8 @@ public class Auto {
         /** The lateral distance, distance between the two vertical encoders */
         private final static double L = 1;
 
-        public void applyDiff(double d_left, double d_right, double d_horiz) {
+        /** Updates `this` to match new encoder readings*/
+        public void update(double d_left, double d_right, double d_horiz) {
             double phi = (d_left - d_right) / L;
             double dxc = (d_left + d_right) / 2,
                 dxh = d_horiz - (F * phi);
@@ -53,6 +54,11 @@ public class Auto {
             x += diff[0];
             y += diff[1];
             angle += phi;
+        }
+
+        /** Returns `this` - `other` */
+        public double[] minus(Pose other) {
+            return new double[] {x - other.x, y - other.y, angle - other.angle};
         }
 
         /** Given dxc (forward/back), dxh (horizontal), and phi (angle), return dx, dy */
@@ -67,6 +73,72 @@ public class Auto {
 
             return new double[] {dx, dy};
         }
+    }
+}
+
+class MoveTask implements Task { 
+    private Auto.Pose target;
+    private DcMotor[] motors;
+    private Auto auto;
+
+    public MoveTask(DcMotor[] motors, Auto.Pose target, Auto auto) {
+        this.target = target;
+        this.motors = motors;
+        this.auto = auto;
+    }
+
+    private double[] prevError;
+    private long prevTime;
+    public boolean step() {
+        // calculate error e(t) with respect to time
+        double[] diff = target.minus(auto.pose);
+        double diffX = diff[0], diffY = diff[1], diffTheta = diff[2];
+
+        // if difference is small finish
+        if (diffX <= 12 && diffY <= 12 && diffTheta <= Math.PI/64) {
+            return true;
+        }
+
+        // transform x and y difference into a/b (diagonal) difference
+        double diffA = diffX * 1 + diffY * 1, // [1 1] motors: BR, FL
+            diffB = diffX * -1 + diffY * 1; // [-1 1] motors: BL, FR
+
+        final double Pm = 0.1;
+        final double Pa = 1 / (Math.PI / 16);
+        final double Dm = 0;
+        final double Da = 0;
+
+        // calculate derivative de/dt
+        double[] deriv = new double[3];
+        long currTime = System.currentTimeMillis();
+        if (prevError != null) {
+            for (int i = 0; i < 3; i++) {
+                deriv[i] = (diff[i] - prevError[i]) / (currTime - prevTime);
+            }
+        }
+        prevTime = currTime;
+        double derivX = deriv[0], derivY = deriv[1], derivTheta = deriv[2];
+
+        // transform dx/dt and dy/dt into da/dt and db/dt
+        double derivA = derivX * 1 + derivY * 1,
+            derivB = derivX * -1 + derivY * 1;
+
+        // apply PID: u(t) = Pe(t) + Dde/dt
+        double pa = diffA * Pm + derivA * Dm, pb = diffB * Pm  + derivB * Dm, pTheta = diffTheta * Pa + derivTheta * Da;
+
+        if (pa > 1 || pb > 1) {
+            double max = Math.max(pa, pb);
+            pa = pa/max;
+            pb = pb/max;
+        }
+
+        // set powers
+        motors[Motors.BR].setPower(pa + pTheta);
+        motors[Motors.FL].setPower(pa - pTheta);
+        motors[Motors.BL].setPower(pb - pTheta);
+        motors[Motors.FR].setPower(pb + pTheta);
+
+        return false;
     }
 }
 
@@ -87,7 +159,7 @@ class PositioningTask implements Task {
             currEncoderPosition[i] = motors[i].getCurrentPosition();
         }
 
-        pose_.applyDiff(currEncoderPosition[Motors.E_L] - prevEncoderPosition[Motors.E_L],
+        pose_.update(currEncoderPosition[Motors.E_L] - prevEncoderPosition[Motors.E_L],
             currEncoderPosition[Motors.E_R] - prevEncoderPosition[Motors.E_R],
             currEncoderPosition[Motors.E_H] - prevEncoderPosition[Motors.E_H]);
 
