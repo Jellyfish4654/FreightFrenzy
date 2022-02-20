@@ -73,6 +73,11 @@ public class Auto {
 
             return new double[] {dx, dy};
         }
+
+        /** For debugging purposes */
+        public String toString() {
+            return "[" + x + " " + y + "; " + angle + "] (" + angle * 180/Math.PI + " deg)";
+        }
     }
 }
 

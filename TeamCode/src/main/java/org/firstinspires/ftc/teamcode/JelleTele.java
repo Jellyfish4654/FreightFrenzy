@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.components.Spinner;
 import org.firstinspires.ftc.teamcode.framework.components.Claw;
+import org.firstinspires.ftc.teamcode.framework.components.Auto;
 
 @TeleOp(name = "UltimateGoal JelleTele")
 public class JelleTele extends BaseOpMode {
@@ -29,7 +30,11 @@ public class JelleTele extends BaseOpMode {
         initHardware();
         waitForStart();
 
+        auto.pose = new Auto.Pose(0, 0, 0);
+        Task positionTask = auto.position();
         while (opModeIsActive()) {
+            positionTask.step();
+
             if (gamepad1.dpad_left) {
                 driveMode = DriveMode.TANK;
             } else if (gamepad1.dpad_up) {
@@ -42,6 +47,7 @@ public class JelleTele extends BaseOpMode {
 
             telemetry.addData("drive mode", driveMode);
             telemetry.addData("precision mode", mult);
+            telemetry.addData("pose", auto.pose.toString());
             telemetry.update();
 
             switch (driveMode) {

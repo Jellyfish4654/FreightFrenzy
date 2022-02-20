@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.components.Spinner;
 import org.firstinspires.ftc.teamcode.framework.components.Claw;
-
+import org.firstinspires.ftc.teamcode.framework.components.Auto;
 
 public abstract class BaseOpMode extends LinearOpMode {
     public static Telemetry tele;
@@ -22,6 +22,7 @@ public abstract class BaseOpMode extends LinearOpMode {
     protected Claw claw;
     protected Spinner spinner;
     protected BNO055IMU imu;
+    protected Auto auto;
     protected void initHardware() {
         BaseOpMode.tele = telemetry;
 
@@ -52,5 +53,7 @@ public abstract class BaseOpMode extends LinearOpMode {
         parameters.loggingEnabled = true;
         parameters.loggingTag = "imu";
         imu.initialize(parameters);        
+
+        auto = new Auto(motors);
     }
 }
