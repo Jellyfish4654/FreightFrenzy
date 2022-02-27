@@ -1,0 +1,32 @@
+SET 3 L=800
+
+init    final       phi=final-init
+0.00 l 1.59 (inc)   +1.59
+1.59 l 0.21         +0.62
+0.21 r 0.81 (dec)   -1.4
+0.81 r -0.43        -1.24
+-0.43 r -1.69       -1.26
+
+---
+SET 2 L=1200 date=02-27
+New methodology: turn drivetrain manually (instead of using the wheels)
+
+init    final           phi=final-init
+0.81 l 1.08 [maybe bad]     +0.27
+1.21 l 1.60                 +0.39
+1.60 l -0.19                +0.21
+-0.22 r -0.64               -0.42
+-0.65 l -0.50               +0.15
+-0.50 l -0.13               +0.37
+
+phi ~= 0.25 ish
+
+---
+SET 1 date=02-27 [BAD]
+1.82 l 0.24
+0.24 l 1.03
+-0.49 r -0.61
+-0.61 r -0.83
+-0.83 r -1.03
+-1.03 l -0.90
+-0.90 l -0.69

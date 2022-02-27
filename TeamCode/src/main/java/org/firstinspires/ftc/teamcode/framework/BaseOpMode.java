@@ -19,10 +19,11 @@ public abstract class BaseOpMode extends LinearOpMode {
     public static Telemetry tele;
 
     protected DcMotor[] motors;
-    protected Claw claw;
-    protected Spinner spinner;
-    protected BNO055IMU imu;
     protected Auto auto;
+ 
+ //    protected Claw claw;
+//    protected Spinner spinner;
+//    protected BNO055IMU imu;
     protected void initHardware() {
         BaseOpMode.tele = telemetry;
 
@@ -33,6 +34,7 @@ public abstract class BaseOpMode extends LinearOpMode {
             hardwareMap.dcMotor.get("motor bl")
         };
 
+        motors[Motors.FR].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[Motors.FL].setDirection(DcMotorSimple.Direction.REVERSE);
         motors[Motors.BL].setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -40,10 +42,10 @@ public abstract class BaseOpMode extends LinearOpMode {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
-        DcMotor carousel = hardwareMap.dcMotor.get("carousel");
-        spinner = new Spinner(carousel);
+/*        DcMotor carousel = hardwareMap.dcMotor.get("carousel");
+        spinner = new Spinner(carousel);*/
 
-        DcMotor clawPivot = hardwareMap.dcMotor.get("claw-pivot");
+/*        DcMotor clawPivot = hardwareMap.dcMotor.get("claw-pivot");
         Servo clawServo = hardwareMap.servo.get("claw-servo");
         clawPivot.setDirection(DcMotorSimple.Direction.FORWARD);
         claw = new Claw(clawPivot, clawServo);
@@ -56,7 +58,7 @@ public abstract class BaseOpMode extends LinearOpMode {
         parameters.calibrationDataFile = "AdafruitIMUCalibration.json";
         parameters.loggingEnabled = true;
         parameters.loggingTag = "imu";
-        imu.initialize(parameters);        
+        imu.initialize(parameters);        */
 
         auto = new Auto(motors);
     }

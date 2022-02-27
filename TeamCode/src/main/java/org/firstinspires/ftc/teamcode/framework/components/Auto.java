@@ -23,6 +23,10 @@ public class Auto {
         return new MoveTask(motors, target, this);
     }
 
+    public String debugEncoders() {
+        return String.format("L:%d R:%d H:%d", motors[Motors.E_L].getCurrentPosition(), motors[Motors.E_R].getCurrentPosition(), motors[Motors.E_H].getCurrentPosition());
+    }
+
     public static class Pose {
         public Pose(double x, double y, double angle) {
             this.x = x;
@@ -39,10 +43,10 @@ public class Auto {
         public double angle;
 
         /** Forward offset; positive if horizontal encoder in front, negative if in back */
-        private final static double F = -1;
+        private final static double F = 1;
 
         /** The lateral distance, distance between the two vertical encoders */
-        private final static double L = 1;
+        private final static double L = 800;
 
         /** Updates `this` to match new encoder readings*/
         public void update(double d_left, double d_right, double d_horiz) {
@@ -54,6 +58,8 @@ public class Auto {
             x += diff[0];
             y += diff[1];
             angle += phi;
+
+            angle = angle % (2*Math.PI);
         }
 
         /** Returns `this` - `other` */
@@ -65,8 +71,14 @@ public class Auto {
         private static double[] calculateDiff(double dxc, double dxh, double phi, double prev_angle) {
             // i think i did this wrong
             // need to double check
-            double dxc2 = dxc * Math.sin(phi)/phi + dxh * ((Math.cos(phi) - 1) / phi),
+            double dxc2, dxh2;
+            if (phi != 0) {
+                dxc2 = dxc * Math.sin(phi)/phi + dxh * ((Math.cos(phi) - 1) / phi);
                 dxh2 = dxc * ((1 - Math.cos(phi)) / phi) + dxh * Math.sin(phi)/phi;
+            } else {
+                dxc2 = dxc;
+                dxh2 = dxh;
+            }
 
             double dx = dxc2 * Math.cos(prev_angle) + dxh2 * -Math.sin(prev_angle),
                 dy = dxc2 * Math.sin(prev_angle) + dxh2 * Math.cos(prev_angle);
@@ -76,7 +88,7 @@ public class Auto {
 
         /** For debugging purposes */
         public String toString() {
-            return "[" + x + " " + y + "; " + angle + "] (" + angle * 180/Math.PI + " deg)";
+            return String.format("[%.2f %.2f; %.2fπ] (%.2f deg)", x, y, angle / Math.PI, angle * 180/Math.PI);
         }
     }
 }
@@ -157,10 +169,10 @@ class PositioningTask implements Task {
     }
 
     /** Previous encoder positions */
-    protected double[] prevEncoderPosition = new double[3];
-    protected double[] currEncoderPosition = new double[3];
+    protected double[] prevEncoderPosition = new double[4];
+    protected double[] currEncoderPosition = new double[4];
     public boolean step() {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             currEncoderPosition[i] = motors[i].getCurrentPosition();
         }
 
@@ -168,7 +180,7 @@ class PositioningTask implements Task {
             currEncoderPosition[Motors.E_R] - prevEncoderPosition[Motors.E_R],
             currEncoderPosition[Motors.E_H] - prevEncoderPosition[Motors.E_H]);
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             prevEncoderPosition[i] = currEncoderPosition[i];
         }
         return false;

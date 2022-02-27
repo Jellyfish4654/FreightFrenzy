@@ -23,7 +23,7 @@ public class JelleTele extends BaseOpMode {
 
     protected DriveMode driveMode = DriveMode.MECANUM;
 
-    protected Task spinnerTask = null;
+//    protected Task spinnerTask = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -48,6 +48,7 @@ public class JelleTele extends BaseOpMode {
             telemetry.addData("drive mode", driveMode);
             telemetry.addData("precision mode", mult);
             telemetry.addData("pose", auto.pose.toString());
+            telemetry.addData("encoders", auto.debugEncoders());
             telemetry.update();
 
             switch (driveMode) {
@@ -81,7 +82,7 @@ public class JelleTele extends BaseOpMode {
                 break;
             }
             }
-
+/*
             if (gamepad2.x) { // blue
                 spinnerTask = spinner.run(DcMotorSimple.Direction.REVERSE);
             } else if (gamepad2.b) { // red
@@ -96,8 +97,8 @@ public class JelleTele extends BaseOpMode {
                         spinnerTask = null;
                     }
                 }
-            }
-
+            }*/
+/*
             if (gamepad2.right_bumper) {
                 claw.grab();
             } else {
@@ -114,10 +115,8 @@ public class JelleTele extends BaseOpMode {
 
             if (gamepad2.left_bumper) {
                 claw.fix();
-            }
+            }*/
 
-
-//            logger.update();
         }
     }
 
@@ -140,12 +139,6 @@ public class JelleTele extends BaseOpMode {
         for (int i = 0; i < 4; i++) {
             powers[i] *= scale;
         }
-
-//        logger.addData("powers", "%.2f %.2f %.2f %.2f", powers[0], powers[1], powers[2], powers[3]);
-/*
-        for (int i = 0; i < 4; i++) {
-            powers[i] *= 1.0;
-        }*/
 
         for (int i = 0; i < 4; i++) {
             motors[i].setPower(powers[i]);
