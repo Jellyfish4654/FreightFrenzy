@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.ThreadPool;
 import android.os.Handler;
 import android.os.Looper;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.Color;
 import com.vuforia.Frame;
 import org.firstinspires.ftc.robotcore.external.function.*;
@@ -37,11 +38,39 @@ public class Vision {
         public int width;
         public int height;
         
-        /* [x+y*width][h|s|v] */
+        /* [x+y*width][0:h|1:s|2:v] */
         public float[][] hsv;
+
+        private static int colorIndex(float hue) {
+            return (int)((hue+18)/36) % 10;
+        }
+
+        public double[] colorProfile(Rect bounds) {
+            int xmin = bounds.left, xmax = bounds.right;
+            int ymin = bounds.top, ymax = bounds.bottom;
+
+            // the number of pixels that are of a given color
+            int[] ncolors = new int[10];
+            for (int x = xmin; x < xmax; x++) {
+                for (int y = ymin; y < ymax; y++) {
+                    int idx = x+y*width;
+                    if (hsv[idx][1] > 0.65 && hsv[idx][2] >= 0.4) {
+                        int colorIdx = colorIndex(hsv[idx][0]);
+                        ncolors[colorIdx] += 1;
+                    }
+                }
+            }
+
+            // the percentage of pixels that are of a given color
+            double[] profile = new double[10];
+            for (int i = 0; i < 9; i++) {
+                profile[i] = (double)(ncolors[i]) / (double)(bounds.width() * bounds.height());
+            }
+            return profile;
+        }
     }
 
-    public void readPixels (Function<Pixels, Void> cb) {
+    public void pixels(Function<Pixels, Void> cb) {
         vuforia.getFrameOnce(Continuation.create(ThreadPool.getDefault(), new Consumer<Frame>() {
             @Override public void accept(Frame frame) {
                 Pixels pixels = new Pixels();
@@ -64,7 +93,9 @@ public class Vision {
             }
         }));
     }
+}
 
+/*
     public static class Result<T> {
         public T value;
         public String error;
@@ -79,13 +110,6 @@ public class Vision {
             result.error = error;
             return result;
         }
-    }
-
-    public static class Areas {
-        public List<double[]> points;
-        public int width;
-        public int height;
-        public List<int[]> colors;
     }
 
     public void getColorProfile(Function<Result<int[]>, Void> cb) {
@@ -117,8 +141,15 @@ public class Vision {
 
             return null;
         });
-    }
+    }*/
 /*
+    public static class Areas {
+        public List<double[]> points;
+        public int width;
+        public int height;
+        public List<int[]> colors;
+    }
+
     private void findAreas(Function<Result<Areas>, Void> cb) {
         readPixels((data) -> {
             final int TSIZE = 120;
@@ -174,4 +205,3 @@ public class Vision {
             return null;
         });
     }*/
-} 

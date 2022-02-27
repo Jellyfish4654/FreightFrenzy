@@ -13,6 +13,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.List;
 import java.util.Arrays;
 
+import android.graphics.Rect;
+
 @TeleOp(name = "Vision Test")
 public class VisionTest extends BaseOpMode {
     @Override
@@ -29,25 +31,22 @@ public class VisionTest extends BaseOpMode {
             telemetry.addData("start", "detecting...");
             telemetry.update();
 
-            final BlockingQueue<Vision.Result<int[]>> queue = new LinkedBlockingQueue();
-            vision.getColorProfile((areas) -> {
+            final BlockingQueue<Vision.Pixels> queue = new LinkedBlockingQueue();
+            vision.pixels((pixels) -> {
                 try {
-                    queue.put(areas);
+                    queue.put(pixels);
                 } catch(Exception e) {}
                 return null;
             });
 
-            Vision.Result<int[]> res = queue.take();
-            if (res.error != null) {
-                telemetry.addData("error", res.error);
-            } else {
-                telemetry.addData("success", Arrays.toString(res.value));
-                boolean found = false;
-                if (res.value[1] >= 100 && res.value[2] >= 20 && res.value[5] >= 20) {
-                    found = true;
-                }
-                telemetry.addData("found", found);
-            }
+            Vision.Pixels pixels = queue.take();
+            double[] profile = pixels.colorProfile(new Rect(
+                pixels.width / 2 - pixels.width / 8, // left
+                pixels.height * 3/4 - pixels.height / 8, // top
+                pixels.width / 2 + pixels.width / 8, // right
+                pixels.height * 3/4 + pixels.height / 8 // bottom
+            ));
+            telemetry.addData("profile", profile);
             telemetry.update();
 
             if (Task.run(Task.wait(10000, null), this)) return;
