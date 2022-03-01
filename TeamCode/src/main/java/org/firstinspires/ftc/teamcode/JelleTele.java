@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.framework.components.Spinner;
 import org.firstinspires.ftc.teamcode.framework.components.Claw;
 import org.firstinspires.ftc.teamcode.framework.components.Auto;
 
-@TeleOp(name = "UltimateGoal JelleTele")
+@TeleOp(name = "Freight Frenzy JelleTele")
 public class JelleTele extends BaseOpMode {
     protected static enum DriveMode {
         TANK,

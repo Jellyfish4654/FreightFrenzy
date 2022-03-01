@@ -23,7 +23,7 @@ public abstract class BaseOpMode extends LinearOpMode {
  
  //    protected Claw claw;
 //    protected Spinner spinner;
-//    protected BNO055IMU imu;
+    protected BNO055IMU imu;
     protected void initHardware() {
         BaseOpMode.tele = telemetry;
 
@@ -48,7 +48,7 @@ public abstract class BaseOpMode extends LinearOpMode {
 /*        DcMotor clawPivot = hardwareMap.dcMotor.get("claw-pivot");
         Servo clawServo = hardwareMap.servo.get("claw-servo");
         clawPivot.setDirection(DcMotorSimple.Direction.FORWARD);
-        claw = new Claw(clawPivot, clawServo);
+        claw = new Claw(clawPivot, clawServo); */
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
@@ -58,7 +58,7 @@ public abstract class BaseOpMode extends LinearOpMode {
         parameters.calibrationDataFile = "AdafruitIMUCalibration.json";
         parameters.loggingEnabled = true;
         parameters.loggingTag = "imu";
-        imu.initialize(parameters);        */
+        imu.initialize(parameters);
 
         auto = new Auto(motors);
     }

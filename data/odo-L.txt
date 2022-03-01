@@ -1,3 +1,24 @@
+SET 5 L=1100
+
+1.16 L 0.84
+0.84 R 0.24
+0.25 R -0.01
+-0.01 L 0.7
+0.02 L 0.28
+0.28 L -0.26
+
+---
+
+SET 4 L=1100
+
+-0.52 r -0.64
+-0.65 l -0.98
+-0.05 l 0.65
+0.64 r 0.2
+0.2 r -0.22 
+-0.22 l -0.93 
+
+---
 SET 3 L=800
 
 init    final       phi=final-init
@@ -10,6 +31,7 @@ init    final       phi=final-init
 ---
 SET 2 L=1200 date=02-27
 New methodology: turn drivetrain manually (instead of using the wheels)
+Each turn is 90 degrees (0.5 pi).
 
 init    final           phi=final-init
 0.81 l 1.08 [maybe bad]     +0.27

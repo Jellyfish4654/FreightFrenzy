@@ -8,6 +8,11 @@ import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.BaseOpMode;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+import android.os.Environment;
+
 public class Auto {
     protected DcMotor[] motors;
     public Auto(DcMotor[] motors) {
@@ -43,10 +48,30 @@ public class Auto {
         public double angle;
 
         /** Forward offset; positive if horizontal encoder in front, negative if in back */
-        private final static double F = 1;
+        private static double F = 0;
 
         /** The lateral distance, distance between the two vertical encoders */
-        private final static double L = 800;
+        private static double L = 0;
+
+        static {
+            // Initialize the F and L constants to the values provided in ~/.freight-frenzy/odo.txt
+            try {
+                File rfile = new File(Environment.getExternalStorageDirectory() + "/.freight-frenzy/odo.txt");
+                Scanner file = new Scanner(rfile);
+                while (file.hasNextLine()) {
+                    String data = file.nextLine();
+                    if (data.startsWith("F")) {
+                        F = Double.parseDouble(data.substring(2));
+                    } else if (data.startsWith("L")) {
+                        L = Double.parseDouble(data.substring(2));
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                // fail silently, dont want crash
+                F = 0;
+                L = 0;
+            }
+        }
 
         /** Updates `this` to match new encoder readings*/
         public void update(double d_left, double d_right, double d_horiz) {

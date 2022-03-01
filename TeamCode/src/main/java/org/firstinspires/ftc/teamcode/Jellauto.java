@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.framework.components.Vision;
 import java.util.concurrent.BlockingQueue;  
 import java.util.concurrent.LinkedBlockingQueue;
 /*
-@Autonomous(name = "Jellauto")
+@Autonomous(name = "Freight Frenzy Jellauto")
 public class Jellauto extends BaseOpMode {
     protected Auto dt;
 
