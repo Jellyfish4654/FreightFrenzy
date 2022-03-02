@@ -17,6 +17,10 @@ public class Auto {
     protected DcMotor[] motors;
     public Auto(DcMotor[] motors) {
         this.motors = motors;
+        for (DcMotor motor: motors) {
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
     }
 
     public Pose pose = null;
@@ -29,7 +33,7 @@ public class Auto {
     }
 
     public String debugEncoders() {
-        return String.format("L:%d R:%d H:%d", motors[Motors.E_L].getCurrentPosition(), motors[Motors.E_R].getCurrentPosition(), motors[Motors.E_H].getCurrentPosition());
+        return String.format("L:%d R:%d H:%d", motors[Motors.E_L].getCurrentPosition(), -motors[Motors.E_R].getCurrentPosition(), motors[Motors.E_H].getCurrentPosition());
     }
 
     public static class Pose {
@@ -196,19 +200,25 @@ class PositioningTask implements Task {
     /** Previous encoder positions */
     protected double[] prevEncoderPosition = new double[4];
     protected double[] currEncoderPosition = new double[4];
+    protected boolean initialized = false;
     public boolean step() {
         for (int i = 0; i < 4; i++) {
             currEncoderPosition[i] = motors[i].getCurrentPosition();
         }
 
-        pose_.update(currEncoderPosition[Motors.E_L] - prevEncoderPosition[Motors.E_L],
-            currEncoderPosition[Motors.E_R] - prevEncoderPosition[Motors.E_R],
-            currEncoderPosition[Motors.E_H] - prevEncoderPosition[Motors.E_H]);
+        if (initialized) {
+            pose_.update(currEncoderPosition[Motors.E_L] - prevEncoderPosition[Motors.E_L],
+                -(currEncoderPosition[Motors.E_R] - prevEncoderPosition[Motors.E_R]),
+                currEncoderPosition[Motors.E_H] - prevEncoderPosition[Motors.E_H]);
 
-        for (int i = 0; i < 4; i++) {
-            prevEncoderPosition[i] = currEncoderPosition[i];
+            for (int i = 0; i < 4; i++) {
+                prevEncoderPosition[i] = currEncoderPosition[i];
+            }
         }
-        return false;
+
+        initialized = true;
+
+        return false;      
     }
 }
 

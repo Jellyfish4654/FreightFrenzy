@@ -24,31 +24,32 @@ public class OdometryTuning extends BaseOpMode {
 
         double initialAngle = imu.getAngularOrientation().firstAngle;
 
-        motors[Motors.FL].setPower(0.5);
-        motors[Motors.BL].setPower(0.5);
-        motors[Motors.FR].setPower(-0.5);
-        motors[Motors.BR].setPower(-0.5);
+        motors[Motors.FL].setPower(-0.2);
+        motors[Motors.BL].setPower(-0.2);
+        motors[Motors.FR].setPower(0.2);
+        motors[Motors.BR].setPower(0.2);
 
         while (opModeIsActive()) {
             double currAngle = imu.getAngularOrientation().firstAngle;
             double diffAngle = currAngle - initialAngle;
 
             long leftEnc = motors[Motors.E_L].getCurrentPosition(),
-                rightEnc = motors[Motors.E_R].getCurrentPosition(),
+                rightEnc = -motors[Motors.E_R].getCurrentPosition(),
                 horizEnc = motors[Motors.E_H].getCurrentPosition();
 
             telemetry.addData("angle diff", diffAngle);
             telemetry.addData("data", String.format("L:%d R:%d H:%d", leftEnc, rightEnc, horizEnc));
 
-            if (Math.abs(diffAngle) > 90) {
+            if (diffAngle < 0 && diffAngle > -90) {
                 for (DcMotor motor : motors) {
                     motor.setPower(0);
                 }
 
-                double L = (leftEnc - rightEnc) / Math.toRadians(diffAngle);
-                double F = (horizEnc) / Math.toRadians(diffAngle);
+                double L = (leftEnc - rightEnc) / Math.toRadians(diffAngle + 360);
+                double F = (horizEnc) / Math.toRadians(diffAngle + 360);
 
                 telemetry.addData("constants", String.format("L:%.2f F:%.2f", L, F));
+                telemetry.update();
 
                 try {
                     // write data to file
@@ -65,5 +66,7 @@ public class OdometryTuning extends BaseOpMode {
 
             telemetry.update();
         }
+
+        Task.run(Task.wait(10*1000,null), this);
     }
 }

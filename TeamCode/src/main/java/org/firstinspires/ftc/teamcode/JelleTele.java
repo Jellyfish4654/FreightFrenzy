@@ -1,3 +1,4 @@
+//Jeffrey was here C:
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -116,6 +117,16 @@ public class JelleTele extends BaseOpMode {
             if (gamepad2.left_bumper) {
                 claw.fix();
             }*/
+            if(gamepad1.right_trigger >0.5) {
+                for (DcMotor motor: motors) {
+                    motor.setPower(0);
+                    motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                }
+            } else {
+                for (DcMotor motor: motors){
+                    motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                }
+            }
 
         }
     }
