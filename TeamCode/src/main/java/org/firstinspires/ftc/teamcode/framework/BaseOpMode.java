@@ -12,7 +12,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.components.Spinner;
-import org.firstinspires.ftc.teamcode.framework.components.Claw;
+import org.firstinspires.ftc.teamcode.framework.components.Intake;
+import org.firstinspires.ftc.teamcode.framework.components.Arm;
 import org.firstinspires.ftc.teamcode.framework.components.Auto;
 
 public abstract class BaseOpMode extends LinearOpMode {
@@ -21,8 +22,9 @@ public abstract class BaseOpMode extends LinearOpMode {
     protected DcMotor[] motors;
     protected Auto auto;
  
- //    protected Claw claw;
-//    protected Spinner spinner;
+    protected Arm arm;
+    protected Intake intake;
+    protected Spinner spinner;
     protected BNO055IMU imu;
     protected void initHardware() {
         BaseOpMode.tele = telemetry;
@@ -42,13 +44,17 @@ public abstract class BaseOpMode extends LinearOpMode {
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
 
-/*        DcMotor carousel = hardwareMap.dcMotor.get("carousel");
-        spinner = new Spinner(carousel);*/
+        DcMotor carousel = hardwareMap.dcMotor.get("carousel");
+        spinner = new Spinner(carousel);
 
-/*        DcMotor clawPivot = hardwareMap.dcMotor.get("claw-pivot");
-        Servo clawServo = hardwareMap.servo.get("claw-servo");
-        clawPivot.setDirection(DcMotorSimple.Direction.FORWARD);
-        claw = new Claw(clawPivot, clawServo); */
+        DcMotor[] armMotors = new DcMotor[] {
+            hardwareMap.dcMotor.get("arm l"),
+            hardwareMap.dcMotor.get("arm r")
+        };
+        arm = new Arm(armMotors);
+
+        CRServo intakeMotor = hardwareMap.crservo.get("intake");
+        intake = new Intake(intakeMotor);
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
 
