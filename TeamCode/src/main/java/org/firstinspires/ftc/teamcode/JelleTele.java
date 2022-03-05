@@ -1,4 +1,4 @@
-/*
+
 //Jeffrey was here C:
 package org.firstinspires.ftc.teamcode;
 
@@ -12,7 +12,6 @@ import org.firstinspires.ftc.teamcode.framework.BaseOpMode;
 import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.components.Spinner;
-import org.firstinspires.ftc.teamcode.framework.components.Claw;
 import org.firstinspires.ftc.teamcode.framework.components.Auto;
 
 @TeleOp(name = "Freight Frenzy JelleTele")
@@ -32,10 +31,10 @@ public class JelleTele extends BaseOpMode {
         initHardware();
         waitForStart();
 
-        auto.pose = new Auto.Pose(0, 0, 0);
-        Task positionTask = auto.position();
+//        auto.pose = new Auto.Pose(0, 0, 0);
+//        Task positionTask = auto.position();
         while (opModeIsActive()) {
-            positionTask.step();
+/*            positionTask.step();
 
             if (gamepad1.dpad_left) {
                 driveMode = DriveMode.TANK;
@@ -111,7 +110,7 @@ public class JelleTele extends BaseOpMode {
                     }
                 }
             }
-
+*/
             if (gamepad2.left_stick_y > 0) {
                 arm.up();
             } else if (gamepad2.left_stick_y < 0) {
@@ -148,6 +147,5 @@ public class JelleTele extends BaseOpMode {
         for (int i = 0; i < 4; i++) {
             motors[i].setPower(powers[i]);
         }
-    }
+    }*/
 }
-*/
