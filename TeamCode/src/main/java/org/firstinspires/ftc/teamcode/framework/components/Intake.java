@@ -1,12 +1,28 @@
 package org.firstinspires.ftc.teamcode.framework.components;
 
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.framework.Task;
 
 public class Intake {
     DcMotorSimple motor;
-    public Intake(DcMotorSimple motor) {
+    Servo door;
+
+    static final double DOOR_OPEN = 0.5;
+    static final double DOOR_CLOSE = 0.4;
+
+    public Intake(DcMotorSimple motor, Servo door) {
         this.motor = motor;
+        this.door = door;
+    }
+    
+    public void doorOpen() {
+        door.setPosition(DOOR_OPEN);
+    }
+
+    public void doorClose() {
+        door.setPosition(DOOR_CLOSE);
+
     }
 
     public void input() {

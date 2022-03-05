@@ -5,7 +5,11 @@ import org.firstinspires.ftc.teamcode.framework.Task;
 
 public class Arm {
     DcMotor[] motors;
-    private static final double MAX_SPEED = 0.3;
+    private static final double MAX_SPEED = 0.5;
+
+    public static final long[] POSITION_HIGH = new long[] {500,500};
+    public static final long[] POSITION_MID = new long[]{700,700};
+    public static final long[] POSITION_LOW = new long[]{1000,1000};
 
     public Arm(DcMotor[] motors) {
         this.motors = motors;
@@ -23,26 +27,27 @@ public class Arm {
         }
     }
 
+    public long[] position() {
+        return new long[] {
+            motors[0].getCurrentPosition(),
+            motors[1].getCurrentPosition()
+        };
+    }                                                                   
+
     public void test(int n) {
         motors[(n+1)%2].setPower(0);
         motors[n].setPower(MAX_SPEED);
     }
 
-    public void up() {
+    public void move(double speed) {
         for (DcMotor motor: motors) {
-            motor.setPower(MAX_SPEED);
+            motor.setPower(MAX_SPEED * speed);
         }
     }
 
     public void stop() {
         for (DcMotor motor: motors) {
             motor.setPower(0);
-        }
-    }
-
-    public void down() {
-        for (DcMotor motor: motors) {
-            motor.setPower(-MAX_SPEED);
         }
     }
 

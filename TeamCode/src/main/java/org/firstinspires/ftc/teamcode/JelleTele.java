@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.framework.Motors;
 import org.firstinspires.ftc.teamcode.framework.Task;
 import org.firstinspires.ftc.teamcode.framework.components.Spinner;
 import org.firstinspires.ftc.teamcode.framework.components.Auto;
+import org.firstinspires.ftc.teamcode.framework.components.Arm;
 
 @TeleOp(name = "Freight Frenzy JelleTele")
 public class JelleTele extends BaseOpMode {
@@ -24,17 +25,17 @@ public class JelleTele extends BaseOpMode {
 
     protected DriveMode driveMode = DriveMode.MECANUM;
 
-//    protected Task spinnerTask = null;
+    protected Task spinnerTask = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware();
         waitForStart();
 
-//        auto.pose = new Auto.Pose(0, 0, 0);
-//        Task positionTask = auto.position();
+        auto.pose = new Auto.Pose(0, 0, 0);
+        Task positionTask = auto.position();
         while (opModeIsActive()) {
-/*            positionTask.step();
+            positionTask.step();
 
             if (gamepad1.dpad_left) {
                 driveMode = DriveMode.TANK;
@@ -50,6 +51,7 @@ public class JelleTele extends BaseOpMode {
             telemetry.addData("precision mode", mult);
             telemetry.addData("pose", auto.pose.toString());
             telemetry.addData("encoders", auto.debugEncoders());
+            telemetry.addData("arm", String.format("%d %d", arm.position()[0], arm.position()[1]));
             telemetry.update();
 
             switch (driveMode) {
@@ -100,7 +102,7 @@ public class JelleTele extends BaseOpMode {
             } else if (gamepad2.b) { // red
                 spinnerTask = spinner.run(DcMotorSimple.Direction.FORWARD);
             } else if (gamepad2.a) {
-                spinner.off();
+                spinner.stop();
                 spinnerTask = null;
             } else {
                 if (spinnerTask != null) {
@@ -110,14 +112,29 @@ public class JelleTele extends BaseOpMode {
                     }
                 }
             }
-*/
-            if (gamepad2.left_stick_y > 0) {
-                arm.up();
-            } else if (gamepad2.left_stick_y < 0) {
-                arm.down();
-            } else {
-                arm.stop();
+
+            arm.move(-gamepad2.left_stick_y);
+
+            if (gamepad2.dpad_up) {
+                arm.moveTo(Arm.POSITION_HIGH);
+            } else if (gamepad2.dpad_left || gamepad2.dpad_right) {
+                arm.moveTo(Arm.POSITION_MID);
+            } else if (gamepad2.dpad_down) {
+                arm.moveTo(Arm.POSITION_LOW);
             }
+
+            if (gamepad2.left_bumper) {
+                arm.setBaseline();
+            }
+
+            if (gamepad2.right_stick_y > 0) {
+                intake.output();
+            } else if (gamepad2.right_stick_y < 0) {
+                intake.input();
+            } else {
+                intake.stop();
+            }
+            
 
             // TODO: intake
             // TODO: 
@@ -127,7 +144,7 @@ public class JelleTele extends BaseOpMode {
     /**
      * Corrects the given motor powers so that they are all <= 1.0
      * and sets the motor powers.
-     *
+     */
     protected void setMotorSpeeds(double mult, double[] powers) {
         for (int i = 0; i < 4; i++) {
             powers[i] = powers[i] * mult;
@@ -147,5 +164,5 @@ public class JelleTele extends BaseOpMode {
         for (int i = 0; i < 4; i++) {
             motors[i].setPower(powers[i]);
         }
-    }*/
+    }
 }

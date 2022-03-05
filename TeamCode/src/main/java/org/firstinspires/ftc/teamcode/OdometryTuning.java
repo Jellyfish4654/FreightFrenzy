@@ -1,4 +1,4 @@
-/*package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -69,4 +69,4 @@ public class OdometryTuning extends BaseOpMode {
 
         Task.run(Task.wait(10*1000,null), this);
     }
-}*/
+}
