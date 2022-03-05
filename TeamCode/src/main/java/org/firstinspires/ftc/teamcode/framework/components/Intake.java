@@ -16,4 +16,8 @@ public class Intake {
     public void output() {
         motor.setPower(-1);
     }
+
+    public void stop() {
+        motor.setPower(0);
+    }
 }

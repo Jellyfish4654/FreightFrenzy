@@ -1,3 +1,4 @@
+/*
 //Jeffrey was here C:
 package org.firstinspires.ftc.teamcode;
 
@@ -83,7 +84,18 @@ public class JelleTele extends BaseOpMode {
                 break;
             }
             }
-/*
+
+            if(gamepad1.right_trigger >0.5) {
+                for (DcMotor motor: motors) {
+                    motor.setPower(0);
+                    motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+                }
+            } else {
+                for (DcMotor motor: motors){
+                    motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                }
+            }
+
             if (gamepad2.x) { // blue
                 spinnerTask = spinner.run(DcMotorSimple.Direction.REVERSE);
             } else if (gamepad2.b) { // red
@@ -98,43 +110,25 @@ public class JelleTele extends BaseOpMode {
                         spinnerTask = null;
                     }
                 }
-            }*/
-/*
-            if (gamepad2.right_bumper) {
-                claw.grab();
-            } else {
-                claw.ungrab();
             }
 
             if (gamepad2.left_stick_y > 0) {
-                claw.powerDown();
+                arm.up();
             } else if (gamepad2.left_stick_y < 0) {
-                claw.powerUp();
+                arm.down();
             } else {
-                claw.powerOff();
+                arm.stop();
             }
 
-            if (gamepad2.left_bumper) {
-                claw.fix();
-            }*/
-            if(gamepad1.right_trigger >0.5) {
-                for (DcMotor motor: motors) {
-                    motor.setPower(0);
-                    motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                }
-            } else {
-                for (DcMotor motor: motors){
-                    motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                }
-            }
-
+            // TODO: intake
+            // TODO: 
         }
     }
 
     /**
      * Corrects the given motor powers so that they are all <= 1.0
      * and sets the motor powers.
-     */
+     *
     protected void setMotorSpeeds(double mult, double[] powers) {
         for (int i = 0; i < 4; i++) {
             powers[i] = powers[i] * mult;
@@ -156,3 +150,4 @@ public class JelleTele extends BaseOpMode {
         }
     }
 }
+*/

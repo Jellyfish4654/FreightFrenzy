@@ -19,16 +19,16 @@ import org.firstinspires.ftc.teamcode.framework.components.Auto;
 public abstract class BaseOpMode extends LinearOpMode {
     public static Telemetry tele;
 
-    protected DcMotor[] motors;
-    protected Auto auto;
+//    protected DcMotor[] motors;
+//    protected Auto auto;
  
     protected Arm arm;
-    protected Intake intake;
-    protected Spinner spinner;
+//    protected Intake intake;
+//    protected Spinner spinner;
     protected BNO055IMU imu;
     protected void initHardware() {
         BaseOpMode.tele = telemetry;
-
+/*
         motors = new DcMotor[] {
             hardwareMap.dcMotor.get("motor fr"),
             hardwareMap.dcMotor.get("motor br"),
@@ -46,13 +46,13 @@ public abstract class BaseOpMode extends LinearOpMode {
 
         DcMotor carousel = hardwareMap.dcMotor.get("carousel");
         spinner = new Spinner(carousel);
-
+*/
         DcMotor[] armMotors = new DcMotor[] {
             hardwareMap.dcMotor.get("arm l"),
             hardwareMap.dcMotor.get("arm r")
         };
         arm = new Arm(armMotors);
-
+/*
         CRServo intakeMotor = hardwareMap.crservo.get("intake");
         intake = new Intake(intakeMotor);
 
@@ -66,6 +66,6 @@ public abstract class BaseOpMode extends LinearOpMode {
         parameters.loggingTag = "imu";
         imu.initialize(parameters);
 
-        auto = new Auto(motors);
+        auto = new Auto(motors);*/
     }
 }

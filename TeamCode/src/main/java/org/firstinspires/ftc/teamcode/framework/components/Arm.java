@@ -11,7 +11,7 @@ public class Arm {
         this.motors = motors;
 
         for (DcMotor motor: motors) {
-            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
             motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);  
         }
     }
@@ -24,12 +24,19 @@ public class Arm {
     }
 
     public void test(int n) {
+        motors[(n+1)%2].setPower(0);
         motors[n].setPower(MAX_SPEED);
     }
 
     public void up() {
         for (DcMotor motor: motors) {
             motor.setPower(MAX_SPEED);
+        }
+    }
+
+    public void stop() {
+        for (DcMotor motor: motors) {
+            motor.setPower(0);
         }
     }
 

@@ -14,7 +14,7 @@ public class MotorTest extends BaseOpMode {
         waitForStart();
         
         while (opModeIsActive()) {
-            if (gamepad1.a) {
+/*            if (gamepad1.a) {
                 motors[Motors.FL].setPower(0.5);
             } else {
                 motors[Motors.FL].setPower(0);
@@ -38,8 +38,15 @@ public class MotorTest extends BaseOpMode {
                 motors[Motors.BR].setPower(0.5);
             } else {
                 motors[Motors.BR].setPower(0);
-            }
+            }*/
 
+            if (gamepad1.left_bumper) {
+                arm.test(0);
+            } else if (gamepad1.right_bumper) {
+                arm.test(1);
+            } else {
+                arm.stop();
+            }
         }
     }
 }
