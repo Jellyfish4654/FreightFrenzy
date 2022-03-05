@@ -1,4 +1,4 @@
-//package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.framework.components.Vision;
 
 import java.util.concurrent.BlockingQueue;  
 import java.util.concurrent.LinkedBlockingQueue;
-/*
+
 @Autonomous(name = "Freight Frenzy Jellauto")
 public class Jellauto extends BaseOpMode {
     protected Auto dt;
@@ -45,13 +45,26 @@ public class Jellauto extends BaseOpMode {
 
     protected static boolean containsElement(int[] profile) {
         return profile[1] >= 100 && profile[2] >= 20 && profile[5] >= 20;
-    }*
+    }*/
+
+    protected Task wrapPosition(Task inner) {
+        return Task.sim(
+            auto.position(),
+            () -> {
+                telemetry.addData("pose", auto.pose);
+                telemetry.update();
+                return false;
+            },
+            inner
+        );
+    }
+
+    final static double Pm = 0.007;
+    final static double Pa = 1.1;
 
     @Override
     public void runOpMode() throws InterruptedException {
         initHardware(); 
-        claw.grab();
-        dt = new Auto(motors, imu);
 //        vision = new Vision("Webcam 1", hardwareMap);
 
         while (!opModeIsActive() && !isStopRequested()) {
@@ -74,158 +87,47 @@ public class Jellauto extends BaseOpMode {
 
         switch (algorithm) {
         case TEST:
-            Task.run(Task.seq(
-                dt.move(14, 0, 0.3),
-                dt.move(14, -90, 0.5),
-                Task.wait(5000, null),
-                dt.pivot(90, 0.5)
+            auto.pose = new Auto.Pose(0, 0, 0);
+            Auto.Pose target = new Auto.Pose(0, 0, Math.PI / 2);
+            Task.run(Task.sim(
+                auto.position(),
+                () -> {
+                    telemetry.addData("pose", auto.pose);
+                    telemetry.addData("target", target);
+                    telemetry.update();
+                    return false;
+                },
+                Task.seq(
+                    auto.moveTo(target, 0.5, Pm, Pa)
+                )
             ), this);
             break;
         case SIMPLE:
             if (position == Position.CAROUSEL) {
-                if (team == Team.BLUE) {
-                    Task.run(Task.seq(
-                        dt.move(16, 90, 0.5),
-                        dt.move(36, 180, 0.5),
-                        Task.seq(
-                            Task.wait(300, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
-                            () -> { for (DcMotor motor: motors) { motor.setPower(0); }; return true; }
-                        ),
-                        spinner.run(DcMotorSimple.Direction.REVERSE), // blue = reverse
-                        dt.move(50, 90, 0.5),
-                        dt.move(8, 180, 0.5)
-                    ), this);
-                } else {
-                    Task.run(Task.seq(
-                        dt.move(22, -90, 0.5),
-                        dt.pivot(90, 0.5),
-                        dt.move(64, -90, 0.5),
-                        dt.move(12, 180, 0.5),
-                        Task.seq(
-                            Task.wait(300, () -> { for (DcMotor motor: motors) { motor.setPower(-0.3); }; return false; }), // move slightly into carousel
-                            () -> { for (DcMotor motor: motors) { motor.setPower(0); }; return true; }
-                        ),
-                        spinner.run(DcMotorSimple.Direction.FORWARD), // red = forward
-                        dt.move(40, 0, 0.5),
-                        dt.pivot(-65, 0.5),
-                        dt.move(10, 180, 0.5)
-                    ), this);
-                }
+                auto.pose = new Auto.Pose(0,                                        24*Auto.ENC_PER_IN, -Math.PI / 2);
+                Task.run(wrapPosition(Task.seq(
+                    auto.moveTo(new Auto.Pose(0,                                    8.6 * Auto.ENC_PER_IN, -Math.PI / 2), 0.3, Pm/3, Pa),
+                    spinner.run(team == Team.BLUE ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD),
+                    auto.moveTo(new Auto.Pose(REV_IF_RED * -36*Auto.ENC_PER_IN,     32*Auto.ENC_PER_IN, -Math.PI/2), 0.4, Pm, Pa),
+                    () -> { intake.doorOpen(); return true; },
+                    Task.wait(1000, null),
+                    Task.wait(4000, () -> {intake.input(); return false; }),
+                    () -> { intake.stop(); intake.doorClose(); return true; },
+                    auto.moveTo(new Auto.Pose(REV_IF_RED * -29.5*Auto.ENC_PER_IN,   2 *Auto.ENC_PER_IN, -Math.PI/2), 0.5, Pm, Pa)
+                )), this);
             } else { // position == WAREHOUSE
-                Task.run(Task.seq(
-                    dt.move(48, 0, 0.5)
-                ), this);
+                auto.pose = new Auto.Pose(0, 6*Auto.ENC_PER_IN, -Math.PI / 2);
+                Task.run(wrapPosition(Task.seq(
+                    auto.moveTo(new Auto.Pose(REV_IF_RED * 40*Auto.ENC_PER_IN,      8.5 * Auto.ENC_PER_IN, -Math.PI/2), 0.5, Pm, Pa),
+                    () -> { intake.doorOpen(); return true; },
+                    Task.wait(1000, null),
+                    Task.wait(4000, () -> {intake.input(); return false; }),
+                    () -> { intake.stop(); intake.doorClose(); return true; },
+                    auto.moveTo(new Auto.Pose(0, 4 * Auto.ENC_PER_IN, -Math.PI / 2), 0.5, Pm, Pa),
+                    auto.moveTo(new Auto.Pose(0, -24 * Auto.ENC_PER_IN, -Math.PI / 2), 0.5, Pm, Pa)
+                )), this);
             }
             break;
-/*        case VISION:
-
-            break;*
         }
-/*
-        final int reverseRed = team == Team.RED ? -1 : 1; // "for blue"
-        if (position == Position.SIMPLE) {
-            Task.run(Task.seq(
-                dt.move(8, 0.7),
-                dt.pivot(90 * reverseRed, 0.7),
-                dt.move(24*3, 0.7)
-            ), this);
-            return;
-        }
-
-        // move claw up
-        if (Task.run(claw.up(180), this)) return;
-
-        if (hasElement()) {
-            /// center = L2 /// (appendix D)
-            scoring = Scoring.L2;
-            if (Task.run(dt.move(5, 0.7), this)) return;
-        } else {
-            /// left = L1 ///
-            if (Task.run(dt.move(5, 0.7), this)) return;
-
-            // pivot counterclockwise (left)
-            if (Task.run(dt.pivot(12, 0.7), this)) return;
-
-
-            if (hasElement()) {
-                scoring = Scoring.L1;
-            } else {
-            /// right = L3 ///
-                scoring = Scoring.L3;
-            }
-
-            if (Task.run(dt.pivot(-12, 0.7), this)) return;
-        }
-
-        telemetry.addData("team", team);
-        telemetry.addData("position", position);
-        telemetry.addData("scoring", scoring);
-        telemetry.update();
-
-        if(Task.run(
-            Task.seq(
-                dt.move(24+8, 0.4),
-                () -> {
-                    telemetry.addData("done moving", ":)");
-                    telemetry.update();
-                    return true;
-                },
-                dt.pivot((
-                    (team == Team.RED && position == Position.WAREHOUSE) || (team == Team.BLUE && position == Position.CAROUSEL) ? // is the hub on the left?
-                    -90 : // if so, turn right
-                    90
-                    ), 0.5),
-                () -> {
-                    telemetry.addData("done pivoting", ":)");
-                    telemetry.update();
-                    return true;
-                }
-            )
-        , this)) return;
-
-
-        if (scoring == Scoring.L3) {
-            if (Task.run(claw.down(10), this)) return;
-        } else if (scoring == Scoring.L1) {
-            if (Task.run(Task.wait(500, claw.up(30)), this)) return;
-        }
-
-        int off=0;
-        switch (scoring) {
-            case L1: off = -6; break;
-            case L2: off = -3; break;
-            case L3: off = -3; break;
-        };
-        if (Task.run(dt.move(off, 0.5), this)) return;
-        claw.ungrab(); // release!!!!!!!!!!
-
-        telemetry.addData("done scoring", "");
-        telemetry.update();
-        
-        if (Task.run(Task.wait(2000, null), this)) return;
-
-        if (position == Position.CAROUSEL) {            
-            if (Task.run(Task.seq(
-                dt.move(20 - off, 0.7),
-                dt.pivot(-100 * reverseRed, 0.5),
-//                dt.move(26, 0.7),
-//                Task.wait(5000, () -> { spinner.on(); return false; }),
-//                () -> { spinner.off(); return true; },
-                dt.move(-6, 0.7)
-            ), this)) return;
-
-            // :)
-        } else {
-            if (Task.run(Task.seq(
-                dt.move(4 - off, 0.7),  
-                dt.pivot(90 * reverseRed, 0.5),
-                dt.move(4, 0.7),
-                dt.pivot(90 * reverseRed, 0.5),
-                dt.move(36, 1)
-            ), this)) return;
-
-            // :) parked
-        }*
     }
 }
-*/

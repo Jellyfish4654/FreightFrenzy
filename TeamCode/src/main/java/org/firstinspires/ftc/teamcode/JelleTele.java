@@ -26,6 +26,7 @@ public class JelleTele extends BaseOpMode {
     protected DriveMode driveMode = DriveMode.MECANUM;
 
     protected Task spinnerTask = null;
+    protected Task armTask = null;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -113,31 +114,39 @@ public class JelleTele extends BaseOpMode {
                 }
             }
 
-            arm.move(-gamepad2.left_stick_y);
-
-            if (gamepad2.dpad_up) {
-                arm.moveTo(Arm.POSITION_HIGH);
-            } else if (gamepad2.dpad_left || gamepad2.dpad_right) {
-                arm.moveTo(Arm.POSITION_MID);
-            } else if (gamepad2.dpad_down) {
-                arm.moveTo(Arm.POSITION_LOW);
+            // normal arm movement
+            arm.move(gamepad2.left_stick_y * (
+                (gamepad2.right_trigger != 0 ? 0.2 : 1)));
+            if (gamepad2.left_stick_y != 0) {
+                armTask = null;
             }
 
+            // automatic arm controls [dont work]
+            if (gamepad2.dpad_up) {
+                armTask = arm.moveTo(Arm.POSITION_HIGH);
+            } else if (gamepad2.dpad_left || gamepad2.dpad_right) {
+                armTask = arm.moveTo(Arm.POSITION_MID);
+            } else if (gamepad2.dpad_down) {
+                armTask = arm.moveTo(Arm.POSITION_LOW);
+            }
+            if (armTask != null) armTask.step();
             if (gamepad2.left_bumper) {
                 arm.setBaseline();
             }
 
             if (gamepad2.right_stick_y > 0) {
-                intake.output();
-            } else if (gamepad2.right_stick_y < 0) {
                 intake.input();
+            } else if (gamepad2.right_stick_y < 0) {
+                intake.output();
             } else {
                 intake.stop();
             }
-            
 
-            // TODO: intake
-            // TODO: 
+            if (gamepad2.right_bumper) {
+                intake.doorOpen();
+            } else { 
+                intake.doorClose();
+            }
         }
     }
 

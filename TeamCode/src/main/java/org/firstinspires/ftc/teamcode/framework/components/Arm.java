@@ -62,24 +62,12 @@ public class Arm {
         }
 
         public boolean step() {
-            // if both motors are less than
-            // 256 ticks from the target position
-            // stop the task
-            boolean isFinished = true;
-            for (int i = 0; i < 2; i++) {
-                long target = encoderPositions[i];
-                if (Math.abs(motors[i].getCurrentPosition() - target) > 256) {
-                    isFinished = false;
-                }
-            }
-            if (isFinished) return true;
-
             for (int i = 0; i < 2; i++) {
                 long curr = motors[i].getCurrentPosition();
                 long target = encoderPositions[i];
 
                 // u(t) = e(t) * P
-                double pow = (target - curr) * 0.03;
+                double pow = (target - curr) * 0.2;
 
                 // maximum speed :D
                 if (pow > MAX_SPEED) pow = MAX_SPEED;

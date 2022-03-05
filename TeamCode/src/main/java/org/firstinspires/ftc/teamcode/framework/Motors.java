@@ -8,7 +8,7 @@ public final class Motors {
     public final static int FL = 2;
     public final static int BL = 3;
 
-    public final static int E_R = 1;
-    public final static int E_H = 2;
-    public final static int E_L = 3;
+    public final static int E_R = BR;
+    public final static int E_H = FL;
+    public final static int E_L = FR;
 }

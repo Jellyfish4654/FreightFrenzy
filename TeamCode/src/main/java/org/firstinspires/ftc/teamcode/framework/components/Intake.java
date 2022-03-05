@@ -8,8 +8,8 @@ public class Intake {
     DcMotorSimple motor;
     Servo door;
 
-    static final double DOOR_OPEN = 0.5;
-    static final double DOOR_CLOSE = 0.4;
+    static final double DOOR_OPEN = 1;
+    static final double DOOR_CLOSE = 0;
 
     public Intake(DcMotorSimple motor, Servo door) {
         this.motor = motor;
@@ -26,11 +26,11 @@ public class Intake {
     }
 
     public void input() {
-        motor.setPower(1);
+        motor.setPower(-1);
     }
 
     public void output() {
-        motor.setPower(-1);
+        motor.setPower(1);
     }
 
     public void stop() {

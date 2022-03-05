@@ -22,7 +22,7 @@ public class OdometryTuning extends BaseOpMode {
         initHardware();
         waitForStart();
 
-        double initialAngle = imu.getAngularOrientation().firstAngle;
+        double initialAngle = -imu.getAngularOrientation().firstAngle;
 
         motors[Motors.FL].setPower(-0.2);
         motors[Motors.BL].setPower(-0.2);
@@ -30,11 +30,11 @@ public class OdometryTuning extends BaseOpMode {
         motors[Motors.BR].setPower(0.2);
 
         while (opModeIsActive()) {
-            double currAngle = imu.getAngularOrientation().firstAngle;
+            double currAngle = -imu.getAngularOrientation().firstAngle;
             double diffAngle = currAngle - initialAngle;
 
             long leftEnc = motors[Motors.E_L].getCurrentPosition(),
-                rightEnc = -motors[Motors.E_R].getCurrentPosition(),
+                rightEnc = +motors[Motors.E_R].getCurrentPosition(),
                 horizEnc = motors[Motors.E_H].getCurrentPosition();
 
             telemetry.addData("angle diff", diffAngle);

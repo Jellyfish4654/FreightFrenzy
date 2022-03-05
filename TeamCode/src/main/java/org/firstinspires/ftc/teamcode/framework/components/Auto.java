@@ -14,6 +14,8 @@ import java.util.Scanner;
 import android.os.Environment;
 
 public class Auto {
+    public final static long ENC_PER_IN = 1075;
+
     protected DcMotor[] motors;
     public Auto(DcMotor[] motors) {
         this.motors = motors;
@@ -28,12 +30,12 @@ public class Auto {
         return new PositioningTask(motors, this.pose);
     }
 
-    public Task moveTo(Pose target) {
-        return new MoveTask(motors, target, this);
+    public Task moveTo(Pose target, double speed, double Pm, double Pa) {
+        return new MoveTask(motors, target, this, speed, Pm, Pa);
     }
 
     public String debugEncoders() {
-        return String.format("L:%d R:%d H:%d", motors[Motors.E_L].getCurrentPosition(), -motors[Motors.E_R].getCurrentPosition(), motors[Motors.E_H].getCurrentPosition());
+        return String.format("L:%d R:%d H:%d", motors[Motors.E_L].getCurrentPosition(), +motors[Motors.E_R].getCurrentPosition(), motors[Motors.E_H].getCurrentPosition());
     }
 
     public static class Pose {
@@ -127,10 +129,17 @@ class MoveTask implements Task {
     private DcMotor[] motors;
     private Auto auto;
 
-    public MoveTask(DcMotor[] motors, Auto.Pose target, Auto auto) {
+    private double speed; // 0.5
+    private double Pm; // 0.0007
+    private double Pa; // 1.1
+
+    public MoveTask(DcMotor[] motors, Auto.Pose target, Auto auto, double speed, double Pm, double Pa) {
         this.target = target;
         this.motors = motors;
         this.auto = auto;
+        this.speed = speed;
+        this.Pm = Pm;
+        this.Pa = Pa;
     }
 
     private double[] prevError;
@@ -138,20 +147,25 @@ class MoveTask implements Task {
     public boolean step() {
         // calculate error e(t) with respect to time
         double[] diff = target.minus(auto.pose);
-        double diffX = diff[0], diffY = diff[1], diffTheta = diff[2];
+        double diffX_g = diff[0], diffY_g = diff[1], diffTheta = diff[2];
 
         // if difference is small finish
-        if (diffX <= 12 && diffY <= 12 && diffTheta <= Math.PI/64) {
+        if (Math.abs(diffX_g) <= 300 && Math.abs(diffY_g) <= 300 && Math.abs(diffTheta) <= 0.08 * Math.PI) {
+            for (DcMotor motor: motors) {
+                motor.setPower(0);
+            }
             return true;
         }
 
-        // transform x and y difference into a/b (diagonal) difference
-        double diffA = diffX * 1 + diffY * 1, // [1 1] motors: BR, FL
-            diffB = diffX * -1 + diffY * 1; // [-1 1] motors: BL, FR
+        // transform global x and y into relative x and y
+        double diffX = diffX_g * Math.cos(auto.pose.angle) + diffY_g * Math.sin(auto.pose.angle);
+        double diffY = diffX_g * -Math.sin(auto.pose.angle) + diffY_g * Math.cos(auto.pose.angle);
 
-        final double Pm = 0.1;
-        final double Pa = 1 / (Math.PI / 16);
-        final double Dm = 0;
+        // transform x and y difference into a/b (diagonal) difference
+        double diffA = diffX * 1 + diffY * -1, // [1 1] motors: BR, FL
+            diffB = diffX * 1 + diffY * 1; // [-1 1] motors: BL, FR
+
+        final double Dm = 0.0002;
         final double Da = 0;
 
         // calculate derivative de/dt
@@ -172,10 +186,13 @@ class MoveTask implements Task {
         // apply PID: u(t) = Pe(t) + Dde/dt
         double pa = diffA * Pm + derivA * Dm, pb = diffB * Pm  + derivB * Dm, pTheta = diffTheta * Pa + derivTheta * Da;
 
-        if (pa > 1 || pb > 1) {
-            double max = Math.max(pa, pb);
-            pa = pa/max;
-            pb = pb/max;
+        if (Math.abs(pa + pTheta) > speed || Math.abs(pa - pTheta) > speed || Math.abs(pb + pTheta) > speed || Math.abs(pb - pTheta) > speed) {
+            double max = Math.max(Math.max(
+                    Math.abs(pa + pTheta), Math.abs(pa - pTheta)),
+                Math.max(
+                    Math.abs(pb + pTheta), Math.abs(pb - pTheta)));
+            pa = pa/max * speed;
+            pb = pb/max * speed;
         }
 
         // set powers
@@ -208,7 +225,7 @@ class PositioningTask implements Task {
 
         if (initialized) {
             pose_.update(currEncoderPosition[Motors.E_L] - prevEncoderPosition[Motors.E_L],
-                -(currEncoderPosition[Motors.E_R] - prevEncoderPosition[Motors.E_R]),
+                +(currEncoderPosition[Motors.E_R] - prevEncoderPosition[Motors.E_R]),
                 currEncoderPosition[Motors.E_H] - prevEncoderPosition[Motors.E_H]);
 
             for (int i = 0; i < 4; i++) {
